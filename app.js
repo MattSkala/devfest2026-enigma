@@ -13,6 +13,8 @@ const state = {
   isSimulating: false,
   hasInitialReplayed: false,
   currentReplayTx: null,
+  plugPairs: [...ENIGMA_CONFIG.defaultPlugboard],
+  selectedPlugSocket: null,
   nextFetchCountdown: 15,
   currentLitLamp: null,
   litTimer: null
@@ -35,6 +37,14 @@ const elements = {
   circuitBayStatus: document.getElementById("circuit-bay-status"),
   lampboard: document.getElementById("lampboard"),
   keyboard: document.getElementById("keyboard"),
+  // Full Steckerbrett
+  steckerGrid: document.getElementById("stecker-sockets-grid"),
+  steckerSvg: document.getElementById("stecker-cables-svg"),
+  plugCountBadge: document.getElementById("plug-count-badge"),
+  plugPairsText: document.getElementById("plug-pairs-text"),
+  plugboardPairsList: document.getElementById("plugboard-pairs"),
+  btnResetPlugs: document.getElementById("btn-reset-plugs"),
+  btnClearPlugs: document.getElementById("btn-clear-plugs"),
   txList: document.getElementById("tx-list"),
   agendaList: document.getElementById("agenda-list"),
   agendaFilter: document.getElementById("agenda-filter"),
@@ -341,14 +351,14 @@ function drawInternals(trace) {
       <!-- Active Pin Markers -->
       <circle cx="${xKey}" cy="${yKeyIn}" r="5" fill="#00e5ff" filter="url(#cyanGlow)" />
       <circle cx="${xKey}" cy="${yKeyIn}" r="2.5" fill="#ffffff" />
-      <text x="${xKey - 10}" y="${yKeyIn + 3.5}" fill="#00e5ff" font-size="10" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="end">
-        KEY [${inChar}]
+      <text x="${xKey + 10}" y="${yKeyIn + 3.5}" fill="#00e5ff" font-size="9.5" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="start">
+        IN [${inChar}]
       </text>
 
       <circle cx="${xKey}" cy="${yLampOut}" r="5" fill="#ffaa22" filter="url(#amberGlow)" />
       <circle cx="${xKey}" cy="${yLampOut}" r="2.5" fill="#ffffff" />
-      <text x="${xKey - 10}" y="${yLampOut + 3.5}" fill="#ffaa22" font-size="10" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="end">
-        LAMP [${outChar}]
+      <text x="${xKey + 10}" y="${yLampOut + 3.5}" fill="#ffaa22" font-size="9.5" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="start">
+        OUT [${outChar}]
       </text>
     `;
   }
@@ -460,6 +470,190 @@ window.addEventListener("keydown", (e) => {
     sounds.playKeyClack();
   }
 });
+
+// -------------------------------------------------------------
+// Full Interactive Steckerbrett (Plugboard) Controller
+// -------------------------------------------------------------
+
+function initSteckerbrett() {
+  if (!elements.steckerGrid) return;
+
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  elements.steckerGrid.innerHTML = alphabet.map(letter => `
+    <div class="stecker-socket" data-letter="${letter}">
+      <div class="jack-holes">
+        <span class="jack-pin"></span>
+        <span class="jack-pin"></span>
+      </div>
+      <span class="socket-letter">${letter}</span>
+      <span class="socket-plug-tag" id="plug-tag-${letter}"></span>
+    </div>
+  `).join("");
+
+  elements.steckerGrid.querySelectorAll(".stecker-socket").forEach(sock => {
+    sock.addEventListener("click", () => {
+      const letter = sock.dataset.letter;
+      handleSocketClick(letter);
+    });
+  });
+
+  if (elements.btnResetPlugs) {
+    elements.btnResetPlugs.addEventListener("click", () => {
+      state.plugPairs = [...ENIGMA_CONFIG.defaultPlugboard];
+      state.selectedPlugSocket = null;
+      state.machine.setPlugboard(state.plugPairs);
+      sounds.playRotorStep();
+      updateSteckerbrettUI();
+      drawInternals(null);
+    });
+  }
+
+  if (elements.btnClearPlugs) {
+    elements.btnClearPlugs.addEventListener("click", () => {
+      state.plugPairs = [];
+      state.selectedPlugSocket = null;
+      state.machine.setPlugboard([]);
+      sounds.playRotorStep();
+      updateSteckerbrettUI();
+      drawInternals(null);
+    });
+  }
+
+  window.addEventListener("resize", drawSteckerCables);
+  updateSteckerbrettUI();
+}
+
+function handleSocketClick(letter) {
+  sounds.playKeyClack();
+
+  // Check if this letter is already plugged in a pair
+  const existingIndex = state.plugPairs.findIndex(pair => pair.includes(letter));
+  if (existingIndex !== -1) {
+    // Unplug this pair
+    state.plugPairs.splice(existingIndex, 1);
+    state.selectedPlugSocket = null;
+    state.machine.setPlugboard(state.plugPairs);
+    updateSteckerbrettUI();
+    drawInternals(null);
+    return;
+  }
+
+  // Socket is free
+  if (!state.selectedPlugSocket) {
+    state.selectedPlugSocket = letter;
+    updateSteckerbrettUI();
+  } else if (state.selectedPlugSocket === letter) {
+    state.selectedPlugSocket = null;
+    updateSteckerbrettUI();
+  } else {
+    // Form new pair!
+    const newPair = [state.selectedPlugSocket, letter].sort().join("");
+    if (state.plugPairs.length < 10) {
+      state.plugPairs.push(newPair);
+    }
+    state.selectedPlugSocket = null;
+    state.machine.setPlugboard(state.plugPairs);
+    updateSteckerbrettUI();
+    drawInternals(null);
+  }
+}
+
+function updateSteckerbrettUI() {
+  if (!elements.steckerGrid) return;
+
+  const mapping = new Map();
+  for (const pair of state.plugPairs) {
+    mapping.set(pair[0], pair[1]);
+    mapping.set(pair[1], pair[0]);
+  }
+
+  elements.steckerGrid.querySelectorAll(".stecker-socket").forEach(sock => {
+    const letter = sock.dataset.letter;
+    const tagEl = document.getElementById(`plug-tag-${letter}`);
+
+    sock.classList.remove("plugged", "selected");
+
+    if (state.selectedPlugSocket === letter) {
+      sock.classList.add("selected");
+      if (tagEl) tagEl.textContent = "SELECT…";
+    } else if (mapping.has(letter)) {
+      sock.classList.add("plugged");
+      if (tagEl) tagEl.textContent = `⇄ ${mapping.get(letter)}`;
+    } else {
+      if (tagEl) tagEl.textContent = "";
+    }
+  });
+
+  if (elements.plugCountBadge) {
+    elements.plugCountBadge.textContent = `${state.plugPairs.length} / 10 PAIRS`;
+  }
+
+  if (elements.plugPairsText) {
+    elements.plugPairsText.textContent = state.plugPairs.length > 0 ? state.plugPairs.join(" · ") : "NONE (STRAIGHT THROUGH)";
+  }
+
+  if (elements.plugboardPairsList) {
+    elements.plugboardPairsList.innerHTML = state.plugPairs.map(pair => `
+      <div class="plug-badge" data-unplug="${pair}" title="Click to remove plug">
+        🔌 ${pair[0]} ⇄ ${pair[1]} <span style="opacity: 0.6; font-size: 0.7rem;">✕</span>
+      </div>
+    `).join("");
+
+    elements.plugboardPairsList.querySelectorAll("[data-unplug]").forEach(badge => {
+      badge.addEventListener("click", () => {
+        const pairToRemove = badge.dataset.unplug;
+        state.plugPairs = state.plugPairs.filter(p => p !== pairToRemove);
+        state.machine.setPlugboard(state.plugPairs);
+        sounds.playKeyClack();
+        updateSteckerbrettUI();
+        drawInternals(null);
+      });
+    });
+  }
+
+  setTimeout(drawSteckerCables, 50);
+}
+
+function drawSteckerCables() {
+  if (!elements.steckerSvg || !elements.steckerGrid) return;
+
+  const gridRect = elements.steckerGrid.getBoundingClientRect();
+  if (gridRect.width === 0) return;
+
+  const colors = [
+    "#00e5ff", "#ff3344", "#ffaa22", "#00ff9d", "#b537f2", 
+    "#f7d154", "#2de2e6", "#ff6c00", "#38ef7d", "#ea00d9"
+  ];
+
+  let svg = "";
+  state.plugPairs.forEach((pair, idx) => {
+    const sockA = elements.steckerGrid.querySelector(`.stecker-socket[data-letter="${pair[0]}"]`);
+    const sockB = elements.steckerGrid.querySelector(`.stecker-socket[data-letter="${pair[1]}"]`);
+    if (sockA && sockB) {
+      const rectA = sockA.getBoundingClientRect();
+      const rectB = sockB.getBoundingClientRect();
+
+      const x1 = rectA.left + rectA.width / 2 - gridRect.left;
+      const y1 = rectA.top + rectA.height / 2 - gridRect.top;
+      const x2 = rectB.left + rectB.width / 2 - gridRect.left;
+      const y2 = rectB.top + rectB.height / 2 - gridRect.top;
+
+      const color = colors[idx % colors.length];
+      const droop = Math.min(35, Math.abs(x2 - x1) * 0.25 + 15);
+
+      svg += `
+        <path d="M ${x1} ${y1} C ${x1} ${y1 + droop}, ${x2} ${y2 + droop}, ${x2} ${y2}" 
+              fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" opacity="0.85" />
+        <path d="M ${x1} ${y1} C ${x1} ${y1 + droop}, ${x2} ${y2 + droop}, ${x2} ${y2}" 
+              fill="none" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round" opacity="0.6" />
+        <circle cx="${x1}" cy="${y1}" r="3" fill="${color}" />
+        <circle cx="${x2}" cy="${y2}" r="3" fill="${color}" />
+      `;
+    }
+  });
+
+  elements.steckerSvg.innerHTML = svg;
+}
 
 // -------------------------------------------------------------
 // Teleprinter Paper Tape Controls
@@ -909,4 +1103,5 @@ function escapeHtml(str) {
 // Initialize
 updateRotorUI();
 drawInternals(null);
+initSteckerbrett();
 startPolling();

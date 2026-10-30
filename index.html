@@ -247,17 +247,26 @@
         </div>
       </div>
 
-      <!-- Plugboard (Steckerbrett) -->
-      <div class="plugboard-section">
+      <!-- Full Interactive Steckerbrett (26-Socket Plugboard) -->
+      <div class="plugboard-section translucent-panel">
         <div class="plugboard-header">
-          <h4>Steckerbrett (Plugboard Pairs)</h4>
-          <span style="font-size: 0.72rem; color: var(--text-dim);">DevFest Standard: DE · VF · ST</span>
+          <div class="plugboard-title-group">
+            <span class="plugboard-title">🔌 VOLLSTÄNDIGES STECKERBRETT // 26-LETTER PLUGBOARD</span>
+            <span class="plugboard-subtitle">CLICK ANY 2 SOCKETS TO PATCH CABLE LEADS · ACTIVE: <span id="plug-pairs-text" style="color: var(--neon-cyan); font-weight: bold;">DE · VF · ST</span></span>
+          </div>
+          <div class="plugboard-controls">
+            <span class="plug-count-badge" id="plug-count-badge">3 / 10 PAIRS</span>
+            <button class="btn-mini" id="btn-reset-plugs" title="Reset to DevFest Default">Default (DE·VF·ST)</button>
+            <button class="btn-mini" id="btn-clear-plugs" title="Remove all plugs">Clear All</button>
+          </div>
         </div>
-        <div class="plug-pairs-list" id="plugboard-pairs">
-          <div class="plug-badge">🔌 D ⇄ E</div>
-          <div class="plug-badge">🔌 V ⇄ F</div>
-          <div class="plug-badge">🔌 S ⇄ T</div>
+
+        <div class="stecker-matrix-wrapper">
+          <div class="stecker-sockets-grid" id="stecker-sockets-grid"></div>
+          <svg id="stecker-cables-svg" class="stecker-cables-svg"></svg>
         </div>
+
+        <div class="plug-pairs-list" id="plugboard-pairs"></div>
       </div>
     </section>
 

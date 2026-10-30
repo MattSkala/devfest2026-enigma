@@ -183,20 +183,27 @@ body {
   }
 }
 
-/* Machine Chassis & Visual Components */
+/* Translucent X-Ray Cyberpunk Chassis */
 .machine-chassis {
-  background: linear-gradient(180deg, #1c222b 0%, #151921 100%);
-  border: 2px solid var(--chassis-border);
+  background: rgba(14, 18, 26, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 2px solid rgba(0, 217, 255, 0.25);
   border-radius: var(--radius-lg);
   padding: 24px;
   box-shadow: 
-    0 20px 40px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 -2px 0 rgba(0, 0, 0, 0.5);
+    0 25px 50px rgba(0, 0, 0, 0.8),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3),
+    inset 0 0 30px rgba(0, 217, 255, 0.05);
   position: relative;
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
+  background-image: 
+    radial-gradient(circle at 50% 15%, rgba(0, 217, 255, 0.06) 0%, transparent 60%),
+    linear-gradient(rgba(0, 217, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 217, 255, 0.035) 1px, transparent 1px);
+  background-size: 100% 100%, 20px 20px, 20px 20px;
 }
 
 /* Industrial Hex Bolts */
@@ -830,33 +837,174 @@ body {
   color: var(--text-dim);
 }
 
-/* Plugboard Panel */
+/* Full Interactive Steckerbrett */
 .plugboard-section {
-  margin-top: 20px;
-  background: #0e1218;
-  border: 1px solid #232c3a;
+  margin-top: 24px;
+  background: rgba(11, 15, 22, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(70, 95, 130, 0.35);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 18px 20px;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8), 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
 .plugboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(70, 95, 130, 0.3);
+  padding-bottom: 10px;
 }
 
-.plugboard-header h4 {
-  font-size: 0.8rem;
-  letter-spacing: 1px;
-  color: var(--text-muted);
+.plugboard-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.plugboard-title {
+  font-size: 0.82rem;
+  letter-spacing: 1.5px;
+  color: var(--brass);
+  font-weight: 700;
   text-transform: uppercase;
+}
+
+.plugboard-subtitle {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.plugboard-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plug-count-badge {
+  font-size: 0.72rem;
+  font-weight: bold;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: rgba(0, 217, 255, 0.12);
+  color: var(--neon-cyan);
+  border: 1px solid rgba(0, 217, 255, 0.3);
+}
+
+.stecker-matrix-wrapper {
+  position: relative;
+  padding: 12px 6px;
+}
+
+.stecker-sockets-grid {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 10px 8px;
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 900px) {
+  .stecker-sockets-grid {
+    grid-template-columns: repeat(9, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .stecker-sockets-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.stecker-socket {
+  background: radial-gradient(circle at 45% 40%, #1e2633 0%, #0d1117 85%);
+  border: 2px solid #3d4c63;
+  border-radius: 8px;
+  padding: 8px 4px 6px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  position: relative;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+
+.stecker-socket:hover {
+  border-color: var(--neon-cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 217, 255, 0.25);
+}
+
+.stecker-socket.selected {
+  border-color: var(--amber);
+  background: rgba(255, 170, 34, 0.15);
+  box-shadow: 0 0 14px var(--amber);
+  animation: pulse 1.2s infinite;
+}
+
+.stecker-socket.plugged {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 10px rgba(0, 217, 255, 0.4), inset 0 0 8px rgba(0, 217, 255, 0.15);
+}
+
+/* Dual jack holes matching authentic Enigma plug socket */
+.jack-holes {
+  display: flex;
+  gap: 4px;
+}
+
+.jack-pin {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #000;
+  border: 1px solid #6b7d98;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.stecker-socket.plugged .jack-pin {
+  background: var(--neon-cyan);
+  border-color: #fff;
+  box-shadow: 0 0 6px var(--neon-cyan);
+}
+
+.socket-letter {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #e5edf8;
+  font-family: var(--font-mono);
+}
+
+.socket-plug-tag {
+  font-size: 0.62rem;
+  font-weight: bold;
+  color: var(--neon-cyan);
+  min-height: 12px;
+  line-height: 1;
+}
+
+/* Braided patch cables SVG */
+.stecker-cables-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
 }
 
 .plug-pairs-list {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-top: 14px;
 }
 
 .plug-badge {
@@ -865,11 +1013,18 @@ body {
   color: var(--brass);
   padding: 4px 10px;
   border-radius: 4px;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: bold;
   display: flex;
   align-items: center;
   gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.plug-badge:hover {
+  border-color: var(--accent-red);
+  color: var(--accent-red);
 }
 
 /* Sidebar / Live Intelligence Feed */
