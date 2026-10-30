@@ -214,12 +214,16 @@
         </div>
       </div>
 
-      <!-- Electrical Signal Flow Visualizer behind Blurry Glass Cover -->
+      <!-- Electrical Signal Flow Visualizer with Crystal Clear Glass Cover -->
       <div class="circuit-bay-frame">
         <div class="circuit-bay-header">
-          <span class="circuit-bay-title">⚡ ELEKTRISCHER SCHALTPLAN // GLASS-SEALED CIPHER BAY</span>
+          <div class="circuit-bay-title-group">
+            <span class="circuit-bay-title">⚡ ENIGMA INNERE VERKABELUNG // ROTORS & WIRING BAY</span>
+            <span class="circuit-bay-subtitle">REAL-TIME SIGNAL CONDUCTION · 100% UNBLURRED INSPECTION GLASS</span>
+          </div>
           <span class="circuit-bay-status" id="circuit-bay-status">CIRCUIT ARMED</span>
         </div>
+
         <div class="circuit-glass-viewport">
           <!-- Glass corner mounting screws -->
           <div class="glass-screw glass-screw-tl"></div>
@@ -227,19 +231,19 @@
           <div class="glass-screw glass-screw-bl"></div>
           <div class="glass-screw glass-screw-br"></div>
 
-          <!-- Glowing Cyberpunk Circuit Underneath -->
-          <div class="circuit-pcb-underlay">
-            <div class="circuit-grid-lines"></div>
-            <div class="circuit-steps-flow" id="circuit-trace">
-              <span class="flow-step">Awaiting keypress...</span>
-            </div>
-          </div>
+          <!-- Internal Machinery & Interactive Wiring SVG -->
+          <svg id="enigma-internals-svg" viewBox="0 0 840 260" preserveAspectRatio="xMidYMid meet" class="internals-svg"></svg>
 
-          <!-- Frosted Blurry Glass Cover Overlay -->
-          <div class="glass-cover-overlay" aria-hidden="true">
-            <div class="glass-reflection"></div>
-            <div class="glass-specular"></div>
+          <!-- Crystal Clear Glass Cover Overlay (No Blur, Ultra-Clear Anti-Reflective Lens) -->
+          <div class="clear-glass-cover" aria-hidden="true">
+            <div class="glass-specular-edge"></div>
+            <div class="glass-corner-glare"></div>
           </div>
+        </div>
+
+        <!-- Real-time formula readout below the glass bay -->
+        <div class="circuit-math-readout" id="circuit-trace">
+          <span class="flow-step">Awaiting keypress...</span>
         </div>
       </div>
 

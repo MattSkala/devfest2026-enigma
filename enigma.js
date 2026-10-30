@@ -108,46 +108,126 @@ export class EnigmaMachine {
     // Step rotors before encryption
     const stepInfo = this.step();
 
-    const trace = captureTrace ? { input: upper, steps: [] } : null;
+    const trace = captureTrace ? { 
+      input: upper, 
+      rotorPositions: [...this.rotorPositions],
+      steps: [] 
+    } : null;
 
     // 1. Plugboard in
     let current = this.plugboard.get(upper) || upper;
     let idx = current.charCodeAt(0) - 65;
-    if (trace) trace.steps.push({ stage: "Plugboard In", val: current, idx });
+    if (trace) trace.steps.push({ 
+      stage: "Plugboard In", 
+      val: current, 
+      idx, 
+      input: upper,
+      swapped: current !== upper 
+    });
 
     // 2. Right rotor forward (rotor 2)
+    const r3_inIdx = idx;
+    const r3_inPin = (idx + (this.rotorPositions[2] - this.ringSettings[2] + 26) % 26) % 26;
     idx = this.rotorForward(2, idx);
-    if (trace) trace.steps.push({ stage: "Rotor III (Right)", val: String.fromCharCode(idx + 65), idx });
+    const r3_outPin = (idx + (this.rotorPositions[2] - this.ringSettings[2] + 26) % 26) % 26;
+    if (trace) trace.steps.push({ 
+      stage: "Rotor III (Right)", 
+      val: String.fromCharCode(idx + 65), 
+      idx, 
+      inIdx: r3_inIdx, 
+      inPin: r3_inPin, 
+      outPin: r3_outPin,
+      rotorPos: this.rotorPositions[2]
+    });
 
     // 3. Middle rotor forward (rotor 1)
+    const r2_inIdx = idx;
+    const r2_inPin = (idx + (this.rotorPositions[1] - this.ringSettings[1] + 26) % 26) % 26;
     idx = this.rotorForward(1, idx);
-    if (trace) trace.steps.push({ stage: "Rotor II (Mid)", val: String.fromCharCode(idx + 65), idx });
+    const r2_outPin = (idx + (this.rotorPositions[1] - this.ringSettings[1] + 26) % 26) % 26;
+    if (trace) trace.steps.push({ 
+      stage: "Rotor II (Mid)", 
+      val: String.fromCharCode(idx + 65), 
+      idx, 
+      inIdx: r2_inIdx, 
+      inPin: r2_inPin, 
+      outPin: r2_outPin,
+      rotorPos: this.rotorPositions[1]
+    });
 
     // 4. Left rotor forward (rotor 0)
+    const r1_inIdx = idx;
+    const r1_inPin = (idx + (this.rotorPositions[0] - this.ringSettings[0] + 26) % 26) % 26;
     idx = this.rotorForward(0, idx);
-    if (trace) trace.steps.push({ stage: "Rotor I (Left)", val: String.fromCharCode(idx + 65), idx });
+    const r1_outPin = (idx + (this.rotorPositions[0] - this.ringSettings[0] + 26) % 26) % 26;
+    if (trace) trace.steps.push({ 
+      stage: "Rotor I (Left)", 
+      val: String.fromCharCode(idx + 65), 
+      idx, 
+      inIdx: r1_inIdx, 
+      inPin: r1_inPin, 
+      outPin: r1_outPin,
+      rotorPos: this.rotorPositions[0]
+    });
 
     // 5. Reflector B
+    const ref_inIdx = idx;
     const refChar = this.reflector.wiring[idx];
     idx = refChar.charCodeAt(0) - 65;
-    if (trace) trace.steps.push({ stage: "Reflector B", val: refChar, idx });
+    if (trace) trace.steps.push({ 
+      stage: "Reflector B", 
+      val: refChar, 
+      idx, 
+      inIdx: ref_inIdx, 
+      outIdx: idx 
+    });
 
     // 6. Left rotor backward (rotor 0)
+    const r1_revIn = idx;
     idx = this.rotorBackward(0, idx);
-    if (trace) trace.steps.push({ stage: "Rotor I Reverse", val: String.fromCharCode(idx + 65), idx });
+    if (trace) trace.steps.push({ 
+      stage: "Rotor I Reverse", 
+      val: String.fromCharCode(idx + 65), 
+      idx,
+      inIdx: r1_revIn,
+      outIdx: idx,
+      rotorPos: this.rotorPositions[0]
+    });
 
     // 7. Middle rotor backward (rotor 1)
+    const r2_revIn = idx;
     idx = this.rotorBackward(1, idx);
-    if (trace) trace.steps.push({ stage: "Rotor II Reverse", val: String.fromCharCode(idx + 65), idx });
+    if (trace) trace.steps.push({ 
+      stage: "Rotor II Reverse", 
+      val: String.fromCharCode(idx + 65), 
+      idx,
+      inIdx: r2_revIn,
+      outIdx: idx,
+      rotorPos: this.rotorPositions[1]
+    });
 
     // 8. Right rotor backward (rotor 2)
+    const r3_revIn = idx;
     idx = this.rotorBackward(2, idx);
-    if (trace) trace.steps.push({ stage: "Rotor III Reverse", val: String.fromCharCode(idx + 65), idx });
+    if (trace) trace.steps.push({ 
+      stage: "Rotor III Reverse", 
+      val: String.fromCharCode(idx + 65), 
+      idx,
+      inIdx: r3_revIn,
+      outIdx: idx,
+      rotorPos: this.rotorPositions[2]
+    });
 
     // 9. Plugboard out
     const prePlug = String.fromCharCode(idx + 65);
     const finalChar = this.plugboard.get(prePlug) || prePlug;
-    if (trace) trace.steps.push({ stage: "Plugboard Out", val: finalChar, idx: finalChar.charCodeAt(0) - 65 });
+    if (trace) trace.steps.push({ 
+      stage: "Plugboard Out", 
+      val: finalChar, 
+      idx: finalChar.charCodeAt(0) - 65,
+      prePlug,
+      swapped: finalChar !== prePlug
+    });
 
     return { char: finalChar, trace, stepInfo };
   }

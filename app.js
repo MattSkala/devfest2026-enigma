@@ -30,6 +30,7 @@ const elements = {
     document.getElementById("notch-1"),
     document.getElementById("notch-2")
   ],
+  internalsSvg: document.getElementById("enigma-internals-svg"),
   circuitTrace: document.getElementById("circuit-trace"),
   circuitBayStatus: document.getElementById("circuit-bay-status"),
   lampboard: document.getElementById("lampboard"),
@@ -109,7 +110,255 @@ function lightLamp(char) {
   }
 }
 
+function drawInternals(trace) {
+  if (!elements.internalsSvg) return;
+
+  const width = 840;
+  const height = 260;
+  const getY = (idx) => 44 + idx * 7.4;
+
+  const pos = state.machine.getPositions();
+  const r3Pos = pos[2];
+  const r2Pos = pos[1];
+  const r1Pos = pos[0];
+
+  // Column X Coordinates
+  const xKey = 45;
+  const xPlugIn = 120;
+  const xPlugOut = 175;
+  const xR3In = 270;
+  const xR3Out = 345;
+  const xR2In = 430;
+  const xR2Out = 505;
+  const xR1In = 590;
+  const xR1Out = 665;
+  const xRef = 760;
+
+  let svg = `
+    <defs>
+      <linearGradient id="drumGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#1c2533" />
+        <stop offset="50%" stop-color="#121822" />
+        <stop offset="100%" stop-color="#0a0e16" />
+      </linearGradient>
+      <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="2.5" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+      <filter id="amberGlow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="2.5" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    </defs>
+  `;
+
+  // Draw Rotor Drums (Cylinders)
+  const drums = [
+    { x: 260, w: 95, label: `ROTOR III [${r3Pos}]`, notch: "V", isNotch: r3Pos === "V" },
+    { x: 420, w: 95, label: `ROTOR II [${r2Pos}]`, notch: "E", isNotch: r2Pos === "E" },
+    { x: 580, w: 95, label: `ROTOR I [${r1Pos}]`, notch: "Q", isNotch: r1Pos === "Q" },
+    { x: 745, w: 65, label: `REFLECTOR B`, notch: "", isNotch: false }
+  ];
+
+  for (const d of drums) {
+    svg += `
+      <rect x="${d.x}" y="28" width="${d.w}" height="220" rx="5" fill="url(#drumGrad)" stroke="#2b384c" stroke-width="1.2" />
+      <text x="${d.x + d.w / 2}" y="20" fill="${d.isNotch ? '#ff3344' : '#8fa2be'}" font-size="9" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="middle" letter-spacing="0.5">
+        ${d.label} ${d.isNotch ? '★ NOTCH' : ''}
+      </text>
+    `;
+  }
+
+  // Column Headers for Key and Plugboard
+  svg += `
+    <text x="${xKey}" y="20" fill="#8fa2be" font-size="9" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="middle">KEY / LAMP</text>
+    <text x="${(xPlugIn + xPlugOut) / 2}" y="20" fill="#8fa2be" font-size="9" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="middle">PLUGBOARD</text>
+  `;
+
+  // Draw Contact Pins (26 dots for each column)
+  const pinCols = [xPlugIn, xPlugOut, xR3In, xR3Out, xR2In, xR2Out, xR1In, xR1Out, xRef];
+  for (const col of pinCols) {
+    for (let i = 0; i < 26; i++) {
+      const y = getY(i);
+      svg += `<circle cx="${col}" cy="${y}" r="1.6" fill="#313f54" />`;
+    }
+  }
+
+  // Draw Faint Internal Ghost Wires inside Rotors to reveal the complex internals!
+  const drawGhostWires = (x1, x2, wiring, offset = 0) => {
+    let wires = "";
+    for (let i = 0; i < 26; i += 2) { // draw half the wires as ghost to keep diagram crisp
+      const inPin = (i + offset) % 26;
+      const outPin = (wiring.charCodeAt(inPin) - 65 - offset + 26) % 26;
+      wires += `<path d="M ${x1} ${getY(inPin)} C ${x1 + 30} ${getY(inPin)}, ${x2 - 30} ${getY(outPin)}, ${x2} ${getY(outPin)}" fill="none" stroke="#263447" stroke-width="0.75" stroke-opacity="0.6" />`;
+    }
+    return wires;
+  };
+
+  const r3Offset = r3Pos.charCodeAt(0) - 65;
+  const r2Offset = r2Pos.charCodeAt(0) - 65;
+  const r1Offset = r1Pos.charCodeAt(0) - 65;
+
+  svg += drawGhostWires(xR3In, xR3Out, ENIGMA_CONFIG.rotors[2].wiring, r3Offset);
+  svg += drawGhostWires(xR2In, xR2Out, ENIGMA_CONFIG.rotors[1].wiring, r2Offset);
+  svg += drawGhostWires(xR1In, xR1Out, ENIGMA_CONFIG.rotors[0].wiring, r1Offset);
+
+  // Reflector B ghost hairpin loops
+  for (let i = 0; i < 26; i += 2) {
+    const pairChar = ENIGMA_CONFIG.reflector.wiring[i];
+    const pairIdx = pairChar.charCodeAt(0) - 65;
+    if (i < pairIdx) {
+      const y1 = getY(i);
+      const y2 = getY(pairIdx);
+      const cx = xRef + Math.min(38, Math.abs(y2 - y1) * 0.45 + 10);
+      svg += `<path d="M ${xRef} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${xRef} ${y2}" fill="none" stroke="#2a384d" stroke-width="0.75" stroke-opacity="0.6" />`;
+    }
+  }
+
+  // -----------------------------------------------------------
+  // ACTIVE SIGNAL CONDUCTION (When a key is pressed / traced)
+  // -----------------------------------------------------------
+  if (trace && trace.steps && trace.steps.length >= 9) {
+    const s = trace.steps;
+
+    // 1. Key In
+    const inChar = trace.input;
+    const inIdx = inChar.charCodeAt(0) - 65;
+    const yKeyIn = getY(inIdx);
+
+    // 2. Plugboard In
+    const plugInVal = s[0].val;
+    const plugInIdx = s[0].idx;
+    const yPlugIn = getY(inIdx);
+    const yPlugOut = getY(plugInIdx);
+
+    // 3. Rotor III
+    const r3InPin = s[1].inPin;
+    const r3OutPin = s[1].outPin;
+    const yR3In = getY(r3InPin);
+    const yR3Out = getY(r3OutPin);
+
+    // 4. Rotor II
+    const r2InPin = s[2].inPin;
+    const r2OutPin = s[2].outPin;
+    const yR2In = getY(r2InPin);
+    const yR2Out = getY(r2OutPin);
+
+    // 5. Rotor I
+    const r1InPin = s[3].inPin;
+    const r1OutPin = s[3].outPin;
+    const yR1In = getY(r1InPin);
+    const yR1Out = getY(r1OutPin);
+
+    // 6. Reflector B
+    const refInIdx = s[4].inIdx;
+    const refOutIdx = s[4].outIdx;
+    const yRefIn = getY(refInIdx);
+    const yRefOut = getY(refOutIdx);
+
+    // Reverse return steps:
+    // 7. Rotor I Reverse
+    const r1RevIn = s[5].inIdx;
+    const r1RevOut = s[5].outIdx;
+    const yR1RevIn = getY((r1RevIn + r1Offset) % 26);
+    const yR1RevOut = getY((r1RevOut + r1Offset) % 26);
+
+    // 8. Rotor II Reverse
+    const r2RevIn = s[6].inIdx;
+    const r2RevOut = s[6].outIdx;
+    const yR2RevIn = getY((r2RevIn + r2Offset) % 26);
+    const yR2RevOut = getY((r2RevOut + r2Offset) % 26);
+
+    // 9. Rotor III Reverse
+    const r3RevIn = s[7].inIdx;
+    const r3RevOut = s[7].outIdx;
+    const yR3RevIn = getY((r3RevIn + r3Offset) % 26);
+    const yR3RevOut = getY((r3RevOut + r3Offset) % 26);
+
+    // 10. Plugboard Out to Lamp
+    const outChar = s[8].val;
+    const outIdx = s[8].idx;
+    const prePlugIdx = s[8].prePlug ? s[8].prePlug.charCodeAt(0) - 65 : outIdx;
+    const yPlugRevIn = getY(prePlugIdx);
+    const yPlugRevOut = getY(outIdx);
+    const yLampOut = getY(outIdx);
+
+    // ---------------------------------------------------------
+    // FORWARD PATH (Brilliant Neon Cyan Conduction Beam)
+    // ---------------------------------------------------------
+    const fPath = `
+      M ${xKey} ${yKeyIn}
+      L ${xPlugIn} ${yPlugIn}
+      C ${xPlugIn + 25} ${yPlugIn}, ${xPlugOut - 25} ${yPlugOut}, ${xPlugOut} ${yPlugOut}
+      L ${xR3In} ${yR3In}
+      C ${xR3In + 35} ${yR3In}, ${xR3Out - 35} ${yR3Out}, ${xR3Out} ${yR3Out}
+      L ${xR2In} ${yR2In}
+      C ${xR2In + 35} ${yR2In}, ${xR2Out - 35} ${yR2Out}, ${xR2Out} ${yR2Out}
+      L ${xR1In} ${yR1In}
+      C ${xR1In + 35} ${yR1In}, ${xR1Out - 35} ${yR1Out}, ${xR1Out} ${yR1Out}
+      L ${xRef} ${yRefIn}
+    `;
+
+    // Reflector U-turn Hairpin Loop
+    const refLoopX = xRef + Math.min(42, Math.abs(yRefOut - yRefIn) * 0.45 + 16);
+    const refLoop = `M ${xRef} ${yRefIn} C ${refLoopX} ${yRefIn}, ${refLoopX} ${yRefOut}, ${xRef} ${yRefOut}`;
+
+    // ---------------------------------------------------------
+    // REVERSE RETURN PATH (Glowing Incandescent Amber Beam)
+    // ---------------------------------------------------------
+    const rPath = `
+      M ${xRef} ${yRefOut}
+      L ${xR1Out} ${yR1RevIn}
+      C ${xR1Out - 35} ${yR1RevIn}, ${xR1In + 35} ${yR1RevOut}, ${xR1In} ${yR1RevOut}
+      L ${xR2Out} ${yR2RevIn}
+      C ${xR2Out - 35} ${yR2RevIn}, ${xR2In + 35} ${yR2RevOut}, ${xR2In} ${yR2RevOut}
+      L ${xR3Out} ${yR3RevIn}
+      C ${xR3Out - 35} ${yR3RevIn}, ${xR3In + 35} ${yR3RevOut}, ${xR3In} ${yR3RevOut}
+      L ${xPlugOut} ${yPlugRevIn}
+      C ${xPlugOut - 25} ${yPlugRevIn}, ${xPlugIn + 25} ${yPlugRevOut}, ${xPlugIn} ${yPlugRevOut}
+      L ${xKey} ${yLampOut}
+    `;
+
+    svg += `
+      <!-- Forward Glowing Cyan Wire -->
+      <path d="${fPath}" fill="none" stroke="#00e5ff" stroke-width="2.5" filter="url(#cyanGlow)" />
+      <path d="${fPath}" fill="none" stroke="#ffffff" stroke-width="1.2" />
+
+      <!-- Reflector Loop -->
+      <path d="${refLoop}" fill="none" stroke="#00e5ff" stroke-width="2.5" filter="url(#cyanGlow)" />
+      <path d="${refLoop}" fill="none" stroke="#ffffff" stroke-width="1.2" />
+
+      <!-- Reverse Glowing Amber Wire -->
+      <path d="${rPath}" fill="none" stroke="#ffaa22" stroke-width="2.5" filter="url(#amberGlow)" />
+      <path d="${rPath}" fill="none" stroke="#fff4cc" stroke-width="1.2" />
+
+      <!-- Active Pin Markers -->
+      <circle cx="${xKey}" cy="${yKeyIn}" r="5" fill="#00e5ff" filter="url(#cyanGlow)" />
+      <circle cx="${xKey}" cy="${yKeyIn}" r="2.5" fill="#ffffff" />
+      <text x="${xKey - 10}" y="${yKeyIn + 3.5}" fill="#00e5ff" font-size="10" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="end">
+        KEY [${inChar}]
+      </text>
+
+      <circle cx="${xKey}" cy="${yLampOut}" r="5" fill="#ffaa22" filter="url(#amberGlow)" />
+      <circle cx="${xKey}" cy="${yLampOut}" r="2.5" fill="#ffffff" />
+      <text x="${xKey - 10}" y="${yLampOut + 3.5}" fill="#ffaa22" font-size="10" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="end">
+        LAMP [${outChar}]
+      </text>
+    `;
+  }
+
+  elements.internalsSvg.innerHTML = svg;
+}
+
 function renderCircuitTrace(trace) {
+  drawInternals(trace);
+
   if (!trace) {
     elements.circuitTrace.innerHTML = `<span class="flow-step">Awaiting keypress...</span>`;
     return;
@@ -172,6 +421,7 @@ document.querySelectorAll("[data-step-rotor]").forEach(btn => {
     state.machine.rotorPositions[rotorIdx] = (state.machine.rotorPositions[rotorIdx] + dir + 26) % 26;
     sounds.playRotorStep();
     updateRotorUI();
+    drawInternals(null);
   });
 });
 
@@ -183,6 +433,7 @@ elements.rotorVals.forEach((valEl, idx) => {
     state.machine.rotorPositions[idx] = (state.machine.rotorPositions[idx] + dir + 26) % 26;
     sounds.playRotorStep();
     updateRotorUI();
+    drawInternals(null);
   }, { passive: false });
 });
 
@@ -657,4 +908,5 @@ function escapeHtml(str) {
 
 // Initialize
 updateRotorUI();
+drawInternals(null);
 startPolling();

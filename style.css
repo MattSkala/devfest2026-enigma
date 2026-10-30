@@ -694,23 +694,24 @@ body {
   margin-bottom: 12px;
 }
 
+.circuit-bay-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .circuit-bay-title {
   color: var(--brass);
-  font-size: 0.76rem;
+  font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 1.5px;
   text-transform: uppercase;
 }
 
-.circuit-bay-status {
-  font-size: 0.68rem;
-  padding: 2px 8px;
-  border-radius: 10px;
-  background: rgba(0, 255, 157, 0.12);
-  color: var(--neon-green);
-  border: 1px solid rgba(0, 255, 157, 0.3);
+.circuit-bay-subtitle {
+  font-size: 0.65rem;
+  color: var(--text-dim);
   letter-spacing: 1px;
-  font-weight: 600;
 }
 
 .circuit-glass-viewport {
@@ -718,40 +719,77 @@ body {
   border-radius: 6px;
   overflow: hidden;
   border: 1px solid #3d4c63;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9);
-  min-height: 80px;
-  background: #06090e;
+  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.95), 0 4px 12px rgba(0, 0, 0, 0.6);
+  min-height: 250px;
+  background: #05070a;
 }
 
 /* 4 glass corner bolts */
 .glass-screw {
   position: absolute;
-  width: 8px;
-  height: 8px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%, #c0cddf 0%, #5b6a7e 70%, #202735 100%);
-  border: 1px solid #75869c;
+  background: radial-gradient(circle at 35% 35%, #e2ecfa 0%, #76869e 60%, #1f2735 100%);
+  border: 1px solid #899ab3;
   z-index: 10;
   pointer-events: none;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
-.glass-screw-tl { top: 6px; left: 6px; }
-.glass-screw-tr { top: 6px; right: 6px; }
-.glass-screw-bl { bottom: 6px; left: 6px; }
-.glass-screw-br { bottom: 6px; right: 6px; }
+.glass-screw-tl { top: 8px; left: 8px; }
+.glass-screw-tr { top: 8px; right: 8px; }
+.glass-screw-bl { bottom: 8px; left: 8px; }
+.glass-screw-br { bottom: 8px; right: 8px; }
 
-/* Glowing PCB circuit under glass */
-.circuit-pcb-underlay {
-  padding: 16px 20px;
+/* Internal Machinery SVG Wiring Diagram */
+.internals-svg {
+  width: 100%;
+  height: auto;
+  min-height: 250px;
+  display: block;
+  background: radial-gradient(circle at 50% 50%, #0a0e16 0%, #040609 100%);
   position: relative;
-  background-image: 
-    linear-gradient(rgba(0, 217, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 217, 255, 0.04) 1px, transparent 1px);
-  background-size: 16px 16px;
   z-index: 1;
 }
 
-.circuit-steps-flow {
+/* Crystal Clear Glass Cover (NO BLUR - 100% VISIBLE) */
+.clear-glass-cover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 5;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(0, 0, 0, 0.02) 50%, rgba(0, 217, 255, 0.015) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 
+    inset 0 1px 1px rgba(255, 255, 255, 0.25), 
+    inset 0 -1px 1px rgba(0, 0, 0, 0.6),
+    inset 0 0 15px rgba(0, 0, 0, 0.4);
+}
+
+.glass-specular-edge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 5%, rgba(255, 255, 255, 0.4) 30%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.4) 70%, transparent 95%);
+}
+
+.glass-corner-glare {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 120px;
+  height: 80px;
+  background: radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+}
+
+/* Real-time formula readout below the glass bay */
+.circuit-math-readout {
+  margin-top: 10px;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -767,7 +805,7 @@ body {
   padding: 3px 8px;
   border-radius: 4px;
   color: #c9d6e8;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   transition: all 0.2s ease;
 }
@@ -790,39 +828,6 @@ body {
 
 .flow-arrow {
   color: var(--text-dim);
-}
-
-/* Frosted Blurry Glass Overlay */
-.glass-cover-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  backdrop-filter: blur(5px) contrast(1.1) brightness(1.08);
-  -webkit-backdrop-filter: blur(5px) contrast(1.1) brightness(1.08);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(0, 20, 30, 0.15) 50%, rgba(0, 255, 157, 0.03) 100%);
-  pointer-events: none;
-  z-index: 5;
-  box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.05), inset 0 0 25px rgba(0, 0, 0, 0.5);
-}
-
-.glass-reflection {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, transparent 100%);
-}
-
-.glass-specular {
-  position: absolute;
-  top: -50%;
-  left: -20%;
-  width: 140%;
-  height: 200%;
-  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.06) 48%, rgba(255, 255, 255, 0.12) 50%, transparent 52%);
 }
 
 /* Plugboard Panel */
