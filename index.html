@@ -109,102 +109,159 @@
         </div>
 
         <div class="spindle-assembly" id="spindle-assembly">
-          <!-- Central Steel Rotor Axle Shaft -->
+          <!-- Left & Right Cast-Steel Spindle Bearings & Central Axle Shaft -->
+          <div class="spindle-bearing spindle-bearing-left" aria-hidden="true"></div>
           <div class="spindle-axle" aria-hidden="true"></div>
+          <div class="spindle-bearing spindle-bearing-right" aria-hidden="true"></div>
 
           <!-- 1. Left Stator: Umkehrwalze B (Reflector B) -->
           <div class="spindle-stator ukw-unit" id="stator-ukw">
-            <div class="rotor-top-deck stator-top-deck">
-              <div class="rotor-unit-header">
-                <span class="rotor-label">UKW-B</span>
-                <span class="stator-sub">Umkehr</span>
-              </div>
-              <div class="stator-badge-box">
-                <span class="stator-code">B</span>
-                <span class="stator-desc">Reflector</span>
-              </div>
+            <div class="rotor-unit-header">
+              <span class="rotor-label">UKW-B</span>
+              <span class="stator-sub">Umkehr</span>
             </div>
-            <div class="cutaway-drum ukw-drum" id="drum-ukw" data-drum="ukw">
-              <div class="drum-glass-glare"></div>
-              <span class="drum-tag">13 LOOPS</span>
+            <div class="rotor-cylinder-shell stator-shell">
+              <div class="stator-end-flange ukw-end-flange" aria-hidden="true"></div>
+              <div class="rotor-barrel-core stator-barrel-core">
+                <div class="stator-cylinder-crown">
+                  <div class="stator-rivet"></div>
+                  <div class="stator-badge-plate">
+                    <span class="stator-code">B</span>
+                    <span class="stator-desc">Reflector</span>
+                  </div>
+                  <div class="stator-rivet"></div>
+                </div>
+                <div class="rotor-barrel-seam" aria-hidden="true"></div>
+                <div class="cutaway-drum ukw-drum" id="drum-ukw" data-drum="ukw">
+                  <div class="drum-cylinder-shading"></div>
+                  <div class="drum-axle-collar"></div>
+                  <div class="drum-glass-glare"></div>
+                  <span class="drum-tag">13 LOOPS</span>
+                </div>
+              </div>
+              <div class="stator-contact-flange" aria-hidden="true"></div>
             </div>
           </div>
 
           <!-- 2. Left Rotor I -->
           <div class="rotor-unit" data-rotor-idx="0">
-            <div class="rotor-top-deck">
-              <div class="rotor-unit-header">
-                <span class="rotor-label">Walze I</span>
-                <span class="rotor-notch-indicator" id="notch-0">Notch: Q</span>
-              </div>
-              <div class="rotor-wheel">
-                <div class="knurled-gear" aria-hidden="true"></div>
-                <button class="rotor-step-btn" data-step-rotor="0" data-dir="down" title="Step Down">▼</button>
-                <div class="rotor-window" id="rotor-val-0">A</div>
-                <button class="rotor-step-btn" data-step-rotor="0" data-dir="up" title="Step Up">▲</button>
-              </div>
+            <div class="rotor-unit-header">
+              <span class="rotor-label">Walze I</span>
+              <span class="rotor-notch-indicator" id="notch-0">Notch: Q</span>
             </div>
-            <div class="cutaway-drum rotor-drum" id="drum-r1" data-drum="r1">
-              <div class="drum-glass-glare"></div>
-              <span class="drum-tag">WALZE I · 26 PINS</span>
+            <div class="rotor-cylinder-shell">
+              <div class="rotor-left-plate" aria-hidden="true"></div>
+              <div class="rotor-ring-strip" aria-hidden="true"></div>
+              <div class="rotor-barrel-core">
+                <div class="rotor-wheel" data-wheel-idx="0">
+                  <button class="rotor-step-btn" data-step-rotor="0" data-dir="down" title="Step Rotor I Down">▼</button>
+                  <div class="alphabet-tire" title="Scroll or click to rotate Walze I">
+                    <span class="tire-char tire-char-prev" id="rotor-prev-0" data-step-rotor="0" data-dir="up">B</span>
+                    <div class="rotor-window" id="rotor-val-0">A</div>
+                    <span class="tire-char tire-char-next" id="rotor-next-0" data-step-rotor="0" data-dir="down">Z</span>
+                  </div>
+                  <button class="rotor-step-btn" data-step-rotor="0" data-dir="up" title="Step Rotor I Up">▲</button>
+                </div>
+                <div class="rotor-barrel-seam" aria-hidden="true"></div>
+                <div class="cutaway-drum rotor-drum" id="drum-r1" data-drum="r1">
+                  <div class="drum-cylinder-shading"></div>
+                  <div class="drum-axle-collar"></div>
+                  <div class="drum-glass-glare"></div>
+                  <span class="drum-tag">WALZE I · 26 PINS</span>
+                </div>
+              </div>
+              <div class="rotor-thumbwheel-flange" data-step-rotor="0" data-dir="up" title="Click thumbwheel gear to step Walze I"></div>
             </div>
           </div>
 
           <!-- 3. Middle Rotor II -->
           <div class="rotor-unit" data-rotor-idx="1">
-            <div class="rotor-top-deck">
-              <div class="rotor-unit-header">
-                <span class="rotor-label">Walze II</span>
-                <span class="rotor-notch-indicator" id="notch-1">Notch: E</span>
-              </div>
-              <div class="rotor-wheel">
-                <div class="knurled-gear" aria-hidden="true"></div>
-                <button class="rotor-step-btn" data-step-rotor="1" data-dir="down" title="Step Down">▼</button>
-                <div class="rotor-window" id="rotor-val-1">A</div>
-                <button class="rotor-step-btn" data-step-rotor="1" data-dir="up" title="Step Up">▲</button>
-              </div>
+            <div class="rotor-unit-header">
+              <span class="rotor-label">Walze II</span>
+              <span class="rotor-notch-indicator" id="notch-1">Notch: E</span>
             </div>
-            <div class="cutaway-drum rotor-drum" id="drum-r2" data-drum="r2">
-              <div class="drum-glass-glare"></div>
-              <span class="drum-tag">WALZE II · 26 PINS</span>
+            <div class="rotor-cylinder-shell">
+              <div class="rotor-left-plate" aria-hidden="true"></div>
+              <div class="rotor-ring-strip" aria-hidden="true"></div>
+              <div class="rotor-barrel-core">
+                <div class="rotor-wheel" data-wheel-idx="1">
+                  <button class="rotor-step-btn" data-step-rotor="1" data-dir="down" title="Step Rotor II Down">▼</button>
+                  <div class="alphabet-tire" title="Scroll or click to rotate Walze II">
+                    <span class="tire-char tire-char-prev" id="rotor-prev-1" data-step-rotor="1" data-dir="up">B</span>
+                    <div class="rotor-window" id="rotor-val-1">A</div>
+                    <span class="tire-char tire-char-next" id="rotor-next-1" data-step-rotor="1" data-dir="down">Z</span>
+                  </div>
+                  <button class="rotor-step-btn" data-step-rotor="1" data-dir="up" title="Step Rotor II Up">▲</button>
+                </div>
+                <div class="rotor-barrel-seam" aria-hidden="true"></div>
+                <div class="cutaway-drum rotor-drum" id="drum-r2" data-drum="r2">
+                  <div class="drum-cylinder-shading"></div>
+                  <div class="drum-axle-collar"></div>
+                  <div class="drum-glass-glare"></div>
+                  <span class="drum-tag">WALZE II · 26 PINS</span>
+                </div>
+              </div>
+              <div class="rotor-thumbwheel-flange" data-step-rotor="1" data-dir="up" title="Click thumbwheel gear to step Walze II"></div>
             </div>
           </div>
 
           <!-- 4. Right Rotor III -->
           <div class="rotor-unit" data-rotor-idx="2">
-            <div class="rotor-top-deck">
-              <div class="rotor-unit-header">
-                <span class="rotor-label">Walze III</span>
-                <span class="rotor-notch-indicator" id="notch-2">Notch: V</span>
-              </div>
-              <div class="rotor-wheel">
-                <div class="knurled-gear" aria-hidden="true"></div>
-                <button class="rotor-step-btn" data-step-rotor="2" data-dir="down" title="Step Down">▼</button>
-                <div class="rotor-window" id="rotor-val-2">A</div>
-                <button class="rotor-step-btn" data-step-rotor="2" data-dir="up" title="Step Up">▲</button>
-              </div>
+            <div class="rotor-unit-header">
+              <span class="rotor-label">Walze III</span>
+              <span class="rotor-notch-indicator" id="notch-2">Notch: V</span>
             </div>
-            <div class="cutaway-drum rotor-drum" id="drum-r3" data-drum="r3">
-              <div class="drum-glass-glare"></div>
-              <span class="drum-tag">WALZE III · 26 PINS</span>
+            <div class="rotor-cylinder-shell">
+              <div class="rotor-left-plate" aria-hidden="true"></div>
+              <div class="rotor-ring-strip" aria-hidden="true"></div>
+              <div class="rotor-barrel-core">
+                <div class="rotor-wheel" data-wheel-idx="2">
+                  <button class="rotor-step-btn" data-step-rotor="2" data-dir="down" title="Step Rotor III Down">▼</button>
+                  <div class="alphabet-tire" title="Scroll or click to rotate Walze III">
+                    <span class="tire-char tire-char-prev" id="rotor-prev-2" data-step-rotor="2" data-dir="up">B</span>
+                    <div class="rotor-window" id="rotor-val-2">A</div>
+                    <span class="tire-char tire-char-next" id="rotor-next-2" data-step-rotor="2" data-dir="down">Z</span>
+                  </div>
+                  <button class="rotor-step-btn" data-step-rotor="2" data-dir="up" title="Step Rotor III Up">▲</button>
+                </div>
+                <div class="rotor-barrel-seam" aria-hidden="true"></div>
+                <div class="cutaway-drum rotor-drum" id="drum-r3" data-drum="r3">
+                  <div class="drum-cylinder-shading"></div>
+                  <div class="drum-axle-collar"></div>
+                  <div class="drum-glass-glare"></div>
+                  <span class="drum-tag">WALZE III · 26 PINS</span>
+                </div>
+              </div>
+              <div class="rotor-thumbwheel-flange" data-step-rotor="2" data-dir="up" title="Click thumbwheel gear to step Walze III"></div>
             </div>
           </div>
 
           <!-- 5. Right Stator: Eintrittswalze (ETW / Entry Wheel) -->
           <div class="spindle-stator etw-unit" id="stator-etw">
-            <div class="rotor-top-deck stator-top-deck">
-              <div class="rotor-unit-header">
-                <span class="rotor-label">ETW</span>
-                <span class="stator-sub">Stator</span>
-              </div>
-              <div class="stator-badge-box">
-                <span class="stator-code">A–Z</span>
-                <span class="stator-desc">Entry Wheel</span>
-              </div>
+            <div class="rotor-unit-header">
+              <span class="rotor-label">ETW</span>
+              <span class="stator-sub">Stator</span>
             </div>
-            <div class="cutaway-drum etw-drum" id="drum-etw" data-drum="etw">
-              <div class="drum-glass-glare"></div>
-              <span class="drum-tag">ENTRY BUS</span>
+            <div class="rotor-cylinder-shell stator-shell">
+              <div class="stator-contact-flange" aria-hidden="true"></div>
+              <div class="rotor-barrel-core stator-barrel-core">
+                <div class="stator-cylinder-crown">
+                  <div class="stator-rivet"></div>
+                  <div class="stator-badge-plate">
+                    <span class="stator-code">A–Z</span>
+                    <span class="stator-desc">Entry Wheel</span>
+                  </div>
+                  <div class="stator-rivet"></div>
+                </div>
+                <div class="rotor-barrel-seam" aria-hidden="true"></div>
+                <div class="cutaway-drum etw-drum" id="drum-etw" data-drum="etw">
+                  <div class="drum-cylinder-shading"></div>
+                  <div class="drum-axle-collar"></div>
+                  <div class="drum-glass-glare"></div>
+                  <span class="drum-tag">ENTRY BUS</span>
+                </div>
+              </div>
+              <div class="stator-end-flange etw-end-flange" aria-hidden="true"></div>
             </div>
           </div>
         </div>

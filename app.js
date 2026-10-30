@@ -31,10 +31,20 @@ const elements = {
   drumR2: document.getElementById("drum-r2"),
   drumR3: document.getElementById("drum-r3"),
   drumEtw: document.getElementById("drum-etw"),
+  rotorPrevs: [
+    document.getElementById("rotor-prev-0"),
+    document.getElementById("rotor-prev-1"),
+    document.getElementById("rotor-prev-2")
+  ],
   rotorVals: [
     document.getElementById("rotor-val-0"),
     document.getElementById("rotor-val-1"),
     document.getElementById("rotor-val-2")
+  ],
+  rotorNexts: [
+    document.getElementById("rotor-next-0"),
+    document.getElementById("rotor-next-1"),
+    document.getElementById("rotor-next-2")
   ],
   notchIndicators: [
     document.getElementById("notch-0"),
@@ -94,11 +104,19 @@ const elements = {
 function updateRotorUI() {
   const pos = state.machine.getPositions();
   for (let i = 0; i < 3; i++) {
+    const p = state.machine.rotorPositions[i];
     const val = pos[i];
     elements.rotorVals[i].textContent = val;
 
+    if (elements.rotorPrevs[i]) {
+      elements.rotorPrevs[i].textContent = String.fromCharCode(((p + 1) % 26) + 65);
+    }
+    if (elements.rotorNexts[i]) {
+      elements.rotorNexts[i].textContent = String.fromCharCode(((p + 25) % 26) + 65);
+    }
+
     // Check if on notch turnover
-    const isNotch = state.machine.rotorPositions[i] === state.machine.notchPositions[i];
+    const isNotch = p === state.machine.notchPositions[i];
     if (isNotch) {
       elements.notchIndicators[i].classList.add("on-notch");
       elements.notchIndicators[i].textContent = `Notch: ${ENIGMA_CONFIG.rotors[i].notch} ★`;
@@ -340,11 +358,24 @@ function drawInternals(trace) {
   const r2Offset = state.machine.rotorPositions[1];
   const r3Offset = state.machine.rotorPositions[2];
 
-  // Helper to draw all 26 internal rotor wires & brass contact pins inside each cutaway rotor drum
-  const drawRotorDrumInternals = (dRect, wiring, offset) => {
+  // Helper to draw all 26 internal rotor wires, central axle bushing, & spring-loaded Federstifte pins
+  const drawRotorDrumInternals = (dRect, leftNeighborRightX, wiring, offset) => {
     const xLeft = dRect.left + 6;
     const xRight = dRect.right - 6;
     let out = "";
+
+    // Central horizontal steel rotor core sleeve & brass retaining locknuts inside drum
+    const axleY = dRect.cy;
+    out += `
+      <rect x="${dRect.left + 2}" y="${axleY - 9}" width="${dRect.width - 4}" height="18" rx="2"
+            fill="#141c28" stroke="#495b75" stroke-width="0.8" opacity="0.65" />
+      <line x1="${dRect.left + 2}" y1="${axleY - 3}" x2="${dRect.right - 2}" y2="${axleY - 3}"
+            stroke="#9cb2ce" stroke-width="1.1" stroke-opacity="0.35" />
+      <rect x="${xLeft - 2}" y="${axleY - 12}" width="6" height="24" rx="1.5"
+            fill="#b88a44" stroke="#3d280d" stroke-width="0.7" opacity="0.75" />
+      <rect x="${xRight - 4}" y="${axleY - 12}" width="6" height="24" rx="1.5"
+            fill="#b88a44" stroke="#3d280d" stroke-width="0.7" opacity="0.75" />
+    `;
 
     for (let i = 0; i < 26; i++) {
       const inPin = (i + offset) % 26;
@@ -355,28 +386,44 @@ function drawInternals(trace) {
       const yOut = getPinY(dRect, outIdx);
 
       // Alternating copper/brass tint for internal insulated rotor wires
-      const strokeColor = i % 2 === 0 ? "#8a6236" : "#435c7a";
-      const opacity = i % 2 === 0 ? "0.48" : "0.38";
+      const strokeColor = i % 2 === 0 ? "#a8743e" : "#4b6a8e";
+      const opacity = i % 2 === 0 ? "0.54" : "0.42";
 
       out += `
         <path d="M ${xRight} ${yIn} C ${xRight - dRect.width * 0.35} ${yIn}, ${xLeft + dRect.width * 0.35} ${yOut}, ${xLeft} ${yOut}"
-              fill="none" stroke="${strokeColor}" stroke-width="0.9" stroke-opacity="${opacity}" />
-        <circle cx="${xLeft}" cy="${yIn}" r="1.5" fill="#d4a359" opacity="0.8" />
-        <circle cx="${xRight}" cy="${yIn}" r="1.5" fill="#d4a359" opacity="0.8" />
+              fill="none" stroke="${strokeColor}" stroke-width="0.95" stroke-opacity="${opacity}" />
+        <!-- Left flat brass contact pad (Flachkontakt) -->
+        <rect x="${dRect.left + 1}" y="${yIn - 1.3}" width="5" height="2.6" rx="0.8" fill="#e5b96f" opacity="0.85" />
+        <!-- Right spring-loaded gold contact pin (Federstift) -->
+        <line x1="${xRight}" y1="${yIn}" x2="${dRect.right - 0.5}" y2="${yIn}" stroke="#ffd480" stroke-width="1.6" stroke-opacity="0.85" />
+        <circle cx="${xRight}" cy="${yIn}" r="1.6" fill="#d4a359" opacity="0.9" />
       `;
+
+      // Inter-rotor spring pin bridge across spindle gap to left neighbor's contact face
+      if (leftNeighborRightX !== null) {
+        out += `
+          <line x1="${leftNeighborRightX}" y1="${yIn}" x2="${dRect.left + 1}" y2="${yIn}"
+                stroke="#d4a359" stroke-width="1.1" stroke-dasharray="2 1.5" stroke-opacity="0.45" />
+        `;
+      }
     }
     return out;
   };
 
-  sig += drawRotorDrumInternals(r1Rect, ENIGMA_CONFIG.rotors[0].wiring, r1Offset);
-  sig += drawRotorDrumInternals(r2Rect, ENIGMA_CONFIG.rotors[1].wiring, r2Offset);
-  sig += drawRotorDrumInternals(r3Rect, ENIGMA_CONFIG.rotors[2].wiring, r3Offset);
+  const ukwRightX = ukwRect.right - 6;
+  const etwLeftX = etwRect.left + 6;
+  const etwRightX = etwRect.right - 6;
+
+  sig += drawRotorDrumInternals(r1Rect, ukwRightX, ENIGMA_CONFIG.rotors[0].wiring, r1Offset);
+  sig += drawRotorDrumInternals(r2Rect, r1Rect.right - 6, ENIGMA_CONFIG.rotors[1].wiring, r2Offset);
+  sig += drawRotorDrumInternals(r3Rect, r2Rect.right - 6, ENIGMA_CONFIG.rotors[2].wiring, r3Offset);
 
   // Draw UKW-B (Reflector B) 26 pins & 13 internal hairpin loops
-  const ukwRightX = ukwRect.right - 6;
   for (let i = 0; i < 26; i++) {
     const y1 = getPinY(ukwRect, i);
-    sig += `<circle cx="${ukwRightX}" cy="${y1}" r="1.5" fill="#d4a359" opacity="0.8" />`;
+    sig += `
+      <rect x="${ukwRightX - 1}" y="${y1 - 1.3}" width="6" height="2.6" rx="0.8" fill="#d4a359" opacity="0.85" />
+    `;
 
     const pairChar = ENIGMA_CONFIG.reflector.wiring[i];
     const pairIdx = pairChar.charCodeAt(0) - 65;
@@ -386,20 +433,20 @@ function drawInternals(trace) {
       const loopX = Math.max(ukwRect.left + 6, ukwRightX - (10 + (loopSpan / ukwRect.height) * (ukwRect.width - 18)));
       sig += `
         <path d="M ${ukwRightX} ${y1} C ${loopX} ${y1}, ${loopX} ${y2}, ${ukwRightX} ${y2}"
-              fill="none" stroke="#5b7396" stroke-width="0.95" stroke-opacity="0.48" />
+              fill="none" stroke="#6884ab" stroke-width="1.0" stroke-opacity="0.52" />
       `;
     }
   }
 
-  // Draw ETW (Entry Stator) 26 pass-through terminal bars & pins
-  const etwLeftX = etwRect.left + 6;
-  const etwRightX = etwRect.right - 6;
+  // Draw ETW (Entry Stator) 26 pass-through terminal bars, pins & spring bridges to R-III
   for (let i = 0; i < 26; i++) {
     const y = getPinY(etwRect, i);
     sig += `
-      <line x1="${etwLeftX}" y1="${y}" x2="${etwRightX}" y2="${y}" stroke="#3e526e" stroke-width="0.8" stroke-opacity="0.45" />
-      <circle cx="${etwLeftX}" cy="${y}" r="1.4" fill="#d4a359" opacity="0.8" />
-      <circle cx="${etwRightX}" cy="${y}" r="1.5" fill="#00d9ff" opacity="0.7" />
+      <line x1="${r3Rect.right - 6}" y1="${y}" x2="${etwLeftX}" y2="${y}"
+            stroke="#d4a359" stroke-width="1.1" stroke-dasharray="2 1.5" stroke-opacity="0.45" />
+      <line x1="${etwLeftX}" y1="${y}" x2="${etwRightX}" y2="${y}" stroke="#4b6485" stroke-width="0.85" stroke-opacity="0.5" />
+      <rect x="${etwRect.left + 1}" y="${y - 1.3}" width="5" height="2.6" rx="0.8" fill="#d4a359" opacity="0.85" />
+      <circle cx="${etwRightX}" cy="${y}" r="1.5" fill="#00d9ff" opacity="0.75" />
     `;
   }
 
@@ -688,9 +735,9 @@ document.querySelectorAll("[data-step-rotor]").forEach(btn => {
   });
 });
 
-// Scroll wheel on rotor window to change position
-elements.rotorVals.forEach((valEl, idx) => {
-  valEl.addEventListener("wheel", (e) => {
+// Scroll wheel on rotor wheel / alphabet tire or cutaway cylinder to change position
+document.querySelectorAll(".rotor-unit").forEach((unitEl, idx) => {
+  unitEl.addEventListener("wheel", (e) => {
     e.preventDefault();
     const dir = e.deltaY < 0 ? 1 : -1;
     state.machine.rotorPositions[idx] = (state.machine.rotorPositions[idx] + dir + 26) % 26;

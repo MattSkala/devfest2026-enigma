@@ -509,123 +509,186 @@ body {
 
 .spindle-assembly {
   display: grid;
-  grid-template-columns: 0.9fr 1.42fr 1.42fr 1.42fr 0.9fr;
-  gap: 10px;
+  grid-template-columns: 0.9fr 1.44fr 1.44fr 1.44fr 0.9fr;
+  gap: 12px;
   align-items: stretch;
   position: relative;
-  padding: 4px 0;
+  padding: 12px 14px 14px 14px;
   min-width: 0;
+  background: radial-gradient(ellipse at 50% 60%, #0d131c 0%, #05070b 95%);
+  border: 2px solid #1e2836;
+  border-radius: 10px;
+  box-shadow: 
+    inset 0 10px 28px rgba(0, 0, 0, 0.95),
+    inset 0 -6px 16px rgba(0, 0, 0, 0.9),
+    0 2px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* Cast-Steel Spindle Axle Bearings on Left & Right Walls of Rotor Bay */
+.spindle-bearing {
+  position: absolute;
+  top: 70%;
+  width: 14px;
+  height: 46px;
+  transform: translateY(-50%);
+  background: linear-gradient(180deg, #1b222c 0%, #52627a 28%, #9fb0c7 48%, #323d4d 75%, #11161d 100%);
+  border: 1.5px solid #64748b;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.9), inset 0 1px 2px rgba(255, 255, 255, 0.4);
+  z-index: 1;
+}
+.spindle-bearing-left {
+  left: 0;
+  border-radius: 0 5px 5px 0;
+  border-left: none;
+}
+.spindle-bearing-right {
+  right: 0;
+  border-radius: 5px 0 0 5px;
+  border-right: none;
 }
 
 /* Central Brushed Steel Rotor Axle Shaft */
 .spindle-axle {
   position: absolute;
-  left: -6px;
-  right: -6px;
-  top: 68%;
-  height: 22px;
+  left: 6px;
+  right: 6px;
+  top: 70%;
+  height: 26px;
   transform: translateY(-50%);
-  background: linear-gradient(180deg, #27313f 0%, #6f8099 28%, #cdd8e8 48%, #475569 72%, #131820 100%);
-  border-top: 1px solid #94a3b8;
-  border-bottom: 1px solid #090d12;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.85);
+  background: linear-gradient(
+    180deg,
+    #11161f 0%,
+    #3d4b5e 16%,
+    #94a6bd 34%,
+    #eef4fc 47%,
+    #687991 64%,
+    #252f3d 84%,
+    #090c12 100%
+  );
+  border-top: 1px solid #cbd5e1;
+  border-bottom: 1px solid #05070a;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.95);
   z-index: 0;
-  border-radius: 3px;
 }
 
 .spindle-stator,
 .rotor-unit {
-  background: linear-gradient(180deg, rgba(24, 31, 44, 0.92) 0%, rgba(12, 16, 24, 0.94) 100%);
-  border: 1px solid #384963;
-  border-radius: 6px;
-  padding: 8px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 8px;
   position: relative;
-  overflow: hidden;
-  box-shadow: 
-    inset 0 1px 2px rgba(255, 255, 255, 0.12),
-    0 8px 18px rgba(0, 0, 0, 0.75);
   min-width: 0;
 }
 
-.rotor-top-deck {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 6px;
-  min-height: 76px;
-  position: relative;
-  z-index: 10;
-  min-width: 0;
-}
-
+/* Engraved Spindle Bridge Identification Plaque above each Cylinder */
 .rotor-unit-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 4px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 3px 6px;
+  background: linear-gradient(180deg, #222b3a 0%, #0f141d 100%);
+  border: 1px solid #3d4d66;
+  border-bottom: 1.5px solid #755324;
+  border-radius: 4px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  position: relative;
+  z-index: 8;
   min-width: 0;
 }
 
 .rotor-label {
-  font-size: 0.66rem;
-  color: #d6e1f0;
-  font-weight: 700;
+  font-size: 0.64rem;
+  color: #e2ecf7;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.5px;
   white-space: nowrap;
 }
 
 .stator-sub {
-  font-size: 0.56rem;
+  font-size: 0.54rem;
   color: var(--brass);
   text-transform: uppercase;
   white-space: nowrap;
+  font-weight: 700;
 }
 
-.stator-badge-box {
+/* Stator Upper Cylinder Crown (Engraved Brass Badge Plate) */
+.stator-cylinder-crown {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  background: 
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.18) 0%,
+      rgba(38, 50, 68, 0.92) 22%,
+      rgba(18, 24, 34, 0.96) 65%,
+      rgba(10, 14, 20, 0.98) 100%
+    );
+  border-top: 3px solid #788ca6;
+  border-left: 1.5px solid #485970;
+  border-right: 1.5px solid #485970;
+  border-radius: 5px 5px 0 0;
+  padding: 5px 6px;
+  height: 64px;
+  box-shadow: inset 0 2px 5px rgba(255, 255, 255, 0.15), inset 0 -4px 8px rgba(0, 0, 0, 0.85);
+  position: relative;
+  z-index: 8;
+}
+
+.stator-rivet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f5d799 0%, #9c6f2d 70%, #382408 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  flex-shrink: 0;
+}
+
+.stator-badge-plate {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, #121721 0%, #0a0d13 100%);
-  border: 1px solid #2e3b50;
-  border-radius: 5px;
-  padding: 4px 2px;
+  background: linear-gradient(180deg, #0d1219 0%, #171f2b 50%, #0b0f15 100%);
+  border: 1px solid #634922;
+  border-radius: 4px;
+  padding: 3px 2px;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.9);
   overflow: hidden;
 }
 
 .stator-code {
-  font-size: 1rem;
+  font-size: 1.02rem;
   font-weight: 800;
   color: var(--brass);
   letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(212, 163, 89, 0.35);
 }
 
 .stator-desc {
-  font-size: 0.52rem;
-  color: var(--text-dim);
+  font-size: 0.48rem;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.3px;
   white-space: nowrap;
 }
 
 .rotor-notch-indicator {
-  font-size: 0.6rem;
+  font-size: 0.56rem;
   color: var(--text-muted);
   padding: 1px 5px;
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.65);
-  border: 1px solid #2b374a;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid #334155;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   white-space: nowrap;
 }
 
@@ -635,11 +698,11 @@ body {
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #475569;
+  background: #64748b;
 }
 
 .rotor-notch-indicator.on-notch {
-  background: rgba(255, 51, 68, 0.22);
+  background: rgba(255, 51, 68, 0.25);
   color: #ff6677;
   border-color: #ff3344;
   font-weight: bold;
@@ -651,59 +714,109 @@ body {
   box-shadow: 0 0 6px #ff3344;
 }
 
+/* 3D Cylindrical Rotor Upper Crown (Curved Alphabet Tire + Ratchet Pawls) */
 .rotor-wheel {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  justify-content: space-between;
+  gap: 5px;
   position: relative;
-  padding: 5px 8px;
-  background: linear-gradient(180deg, #10151e 0%, #1c2432 50%, #0f131b 100%);
-  border: 1px solid #35455d;
-  border-radius: 5px;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+  z-index: 8;
+  height: 64px;
+  padding: 4px 6px;
+  background: 
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.22) 0%,
+      #2d3a4f 16%,
+      #1a2230 52%,
+      #0e131b 88%,
+      #080b10 100%
+    );
+  border-top: 3px solid #8ba0bd;
+  border-left: 1.5px solid #52647d;
+  border-right: 1.5px solid #52647d;
+  border-radius: 4px 2px 0 0;
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 255, 255, 0.25),
+    inset 0 -5px 10px rgba(0, 0, 0, 0.85);
 }
 
-/* Skeuomorphic Knurled Brass Thumbwheel Rim */
-.knurled-gear {
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  top: -3px;
-  height: 4px;
-  background: repeating-linear-gradient(
-    90deg,
-    #e5b96f 0px,
-    #e5b96f 2px,
-    #593b12 2px,
-    #593b12 4px
+/* Curved 3D Rolling Alphabet Ring (Prev / Active / Next Letters) */
+.alphabet-tire {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(
+    180deg,
+    #05070a 0%,
+    #283242 22%,
+    #3d4c63 48%,
+    #252f3e 78%,
+    #05070a 100%
   );
-  border-radius: 2px;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+  border-left: 2px solid #9c6e2f;
+  border-right: 2px solid #e5b96f;
+  border-radius: 4px;
+  padding: 1px 4px;
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.9),
+    inset 0 6px 8px rgba(0, 0, 0, 0.9),
+    inset 0 -6px 8px rgba(0, 0, 0, 0.9);
+  cursor: ns-resize;
+  user-select: none;
+  position: relative;
+}
+
+.tire-char {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: rgba(229, 185, 111, 0.55);
+  line-height: 1.02;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.tire-char:hover {
+  color: #ffe2a8;
+}
+
+.tire-char-prev {
+  transform: perspective(60px) rotateX(34deg) scale(0.86);
+}
+
+.tire-char-next {
+  transform: perspective(60px) rotateX(-34deg) scale(0.86);
 }
 
 .rotor-step-btn {
-  background: linear-gradient(180deg, #2b3547 0%, #181f2b 100%);
-  border: 1px solid #4d6180;
-  color: #d8e2f0;
-  width: 30px;
-  height: 36px;
+  background: linear-gradient(180deg, #43536d 0%, #202938 52%, #10151e 100%);
+  border: 1px solid #7388a6;
+  color: #e2ecf8;
+  width: 24px;
+  height: 44px;
   border-radius: 4px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.75rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  font-size: 0.66rem;
+  box-shadow: 
+    0 3px 5px rgba(0, 0, 0, 0.8),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
   transition: all 0.1s;
   position: relative;
+  flex-shrink: 0;
 }
 
 .rotor-step-btn:hover {
-  background: var(--brass-dark);
-  color: #fff;
-  border-color: var(--brass);
+  background: linear-gradient(180deg, #e5b96f 0%, #8c6227 100%);
+  color: #0b0d10;
+  border-color: #ffe2a8;
 }
 
 .rotor-step-btn:active {
@@ -711,22 +824,22 @@ body {
 }
 
 .rotor-window {
-  width: 48px;
-  height: 42px;
-  background: radial-gradient(circle at 50% 40%, #171c26 0%, #050608 90%);
-  border: 2.5px solid var(--brass);
-  border-radius: 7px;
+  width: 44px;
+  height: 28px;
+  background: radial-gradient(circle at 50% 42%, #1d2432 0%, #07090d 92%);
+  border: 2px solid #e5b96f;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.65rem;
+  font-size: 1.32rem;
   font-weight: 800;
-  color: var(--brass);
+  color: #ffd480;
   text-shadow: 0 0 12px var(--brass-glow);
   box-shadow: 
-    inset 0 5px 10px rgba(0, 0, 0, 0.95), 
-    0 0 10px rgba(212, 163, 89, 0.25),
-    0 3px 6px rgba(0, 0, 0, 0.7);
+    inset 0 3px 7px rgba(0, 0, 0, 0.95), 
+    0 0 10px rgba(212, 163, 89, 0.35),
+    0 2px 4px rgba(0, 0, 0, 0.8);
   user-select: none;
   position: relative;
   overflow: hidden;
@@ -737,54 +850,305 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, transparent 50%, rgba(255, 255, 255, 0.04) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.28) 0%, transparent 48%, rgba(255, 255, 255, 0.05) 100%);
   pointer-events: none;
-  border-radius: 5px;
 }
 
-/* Exposed Cutaway Rotor Commutator Drum */
+/* Unified 3D Cylindrical Rotor Assembly */
+.rotor-cylinder-shell {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+  height: 234px;
+  margin-top: 2px;
+  margin-bottom: 4px;
+}
+
+/* Main Cylindrical Barrel Core (Upper Alphabet Crown + Brass Seam + Lower Cutaway Drum) */
+.rotor-barrel-core {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  position: relative;
+}
+
+/* Circumferential Machined Brass Retaining Ring Seam between Upper Collar & Cutaway Drum */
+.rotor-barrel-seam {
+  height: 5px;
+  background: linear-gradient(
+    90deg,
+    #3d280d 0%,
+    #b88238 18%,
+    #f7d086 48%,
+    #b88238 82%,
+    #3d280d 100%
+  );
+  border-top: 1px solid #140d04;
+  border-bottom: 1px solid #080b10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  position: relative;
+  z-index: 8;
+}
+
+/* Left Ebonite & Brass Flat-Contact Disc Plate on Each Rotor */
+.rotor-left-plate {
+  width: 6px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background: 
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.75) 0%,
+      rgba(255, 255, 255, 0.25) 22%,
+      transparent 50%,
+      rgba(0, 0, 0, 0.8) 100%
+    ),
+    repeating-linear-gradient(
+      180deg,
+      #cfa058 0px,
+      #cfa058 2px,
+      #2b1d0c 2px,
+      #2b1d0c 6px
+    );
+  border: 1px solid #9c7138;
+  border-right: none;
+  border-radius: 5px 0 0 5px;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.8);
+  z-index: 4;
+}
+
+/* Graduated Metallic Alphabet Ring Band (Buchstabenring) on Left Edge of Rotor Cylinder */
+.rotor-ring-strip {
+  width: 7px;
+  background: 
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.35) 0%,
+      rgba(212, 163, 89, 0.15) 25%,
+      rgba(0, 0, 0, 0.25) 60%,
+      rgba(0, 0, 0, 0.85) 100%
+    ),
+    repeating-linear-gradient(
+      180deg,
+      #7c8ea6 0px,
+      #7c8ea6 4px,
+      #253040 4px,
+      #253040 6px
+    );
+  border-top: 2px solid #9cb0c9;
+  border-bottom: 2px solid #1c2430;
+  border-left: 1px solid #5a6b82;
+  border-right: 1px solid #141a24;
+  border-radius: 3px 0 0 3px;
+  box-shadow: inset 1px 0 2px rgba(255, 255, 255, 0.35);
+  z-index: 8;
+}
+
+/* Heavy Cast-Steel Outer End-Cap Flanges on UKW-B & ETW Stators */
+.stator-end-flange {
+  width: 8px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  background: linear-gradient(
+    180deg,
+    #18202c 0%,
+    #647791 22%,
+    #c2d1e5 38%,
+    #3d4c63 58%,
+    #52647d 78%,
+    #0e131b 100%
+  );
+  border: 1px solid #7c8fa8;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.85);
+  z-index: 8;
+}
+
+.ukw-end-flange {
+  border-radius: 6px 0 0 6px;
+}
+
+.etw-end-flange {
+  border-radius: 0 6px 6px 0;
+  border-color: #00d9ff;
+}
+
+/* Stator Contact Flange (UKW-B right face & ETW left face) */
+.stator-contact-flange {
+  width: 7px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  background: 
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.7) 0%,
+      rgba(255, 255, 255, 0.25) 25%,
+      transparent 55%,
+      rgba(0, 0, 0, 0.8) 100%
+    ),
+    repeating-linear-gradient(
+      180deg,
+      #d4a359 0px,
+      #d4a359 2px,
+      #243040 2px,
+      #243040 6px
+    );
+  border: 1px solid #8c6227;
+  border-radius: 2px;
+  z-index: 4;
+}
+
+/* Oversized Protruding 3D Knurled Brass Thumbwheel Gear (Fingerkranz) on Right Side of Each Rotor */
+.rotor-thumbwheel-flange {
+  width: 16px;
+  margin-top: -8px;
+  margin-bottom: -8px;
+  border-radius: 3px 8px 8px 3px;
+  border: 1.5px solid #ffd88a;
+  border-left: 2px solid #4a300d;
+  cursor: pointer;
+  position: relative;
+  z-index: 9;
+  background: 
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.78) 0%,
+      rgba(255, 255, 255, 0.42) 22%,
+      rgba(255, 255, 255, 0.05) 45%,
+      rgba(0, 0, 0, 0.55) 80%,
+      rgba(0, 0, 0, 0.88) 100%
+    ),
+    repeating-linear-gradient(
+      180deg,
+      #ffe09e 0px,
+      #f3c368 3px,
+      #784d15 3px,
+      #1f1203 6px,
+      #b57e32 6px,
+      #ffe09e 8px
+    );
+  box-shadow: 
+    -4px 0 10px rgba(0, 0, 0, 0.9),
+    3px 4px 10px rgba(0, 0, 0, 0.85),
+    inset 2px 0 3px rgba(255, 255, 255, 0.65);
+  transition: filter 0.15s, transform 0.1s;
+}
+
+/* Ratchet Pawl Tooth (Steuerklinke) engaging bottom of Knurled Thumbwheel */
+.rotor-thumbwheel-flange::after {
+  content: "";
+  position: absolute;
+  bottom: 10px;
+  right: -3px;
+  width: 6px;
+  height: 14px;
+  background: linear-gradient(180deg, #9cb0c9 0%, #3b4a5e 100%);
+  border: 1px solid #cbd5e1;
+  border-radius: 1px 3px 3px 1px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+  pointer-events: none;
+}
+
+.rotor-thumbwheel-flange:hover {
+  filter: brightness(1.22);
+}
+
+.rotor-thumbwheel-flange:active {
+  transform: scaleY(0.99);
+}
+
+/* Exposed Cutaway 3D Cylindrical Rotor Commutator Drum */
 .cutaway-drum {
-  height: 158px;
-  background: radial-gradient(circle at 50% 50%, rgba(12, 18, 28, 0.94) 0%, rgba(4, 7, 12, 0.98) 100%);
-  border: 1.5px solid #475b78;
-  border-left: 2.5px solid #b88a44;
-  border-right: 2.5px solid #b88a44;
-  border-radius: 5px;
+  flex: 1;
+  background: #060a10;
+  border-top: none;
+  border-bottom: 3.5px solid #2b384b;
+  border-left: 1.5px solid #9c7138;
+  border-right: 1.5px solid #9c7138;
+  border-radius: 0 0 3px 5px;
   position: relative;
   overflow: hidden;
   box-shadow: 
-    inset 0 0 16px rgba(0, 0, 0, 0.95),
-    0 2px 6px rgba(0, 0, 0, 0.6);
+    0 10px 18px rgba(0, 0, 0, 0.85),
+    inset 0 10px 20px rgba(0, 0, 0, 0.92),
+    inset 0 -14px 24px rgba(0, 0, 0, 0.95);
+}
+
+.rotor-drum {
+  border-radius: 0 0 2px 4px;
 }
 
 .ukw-drum {
-  border-left: 3px solid #64748b;
-  border-right: 2.5px solid #d4a359;
+  border-left: 2px solid #4a5a70;
+  border-right: 2px solid #d4a359;
+  border-radius: 0 0 2px 8px;
 }
 
 .etw-drum {
-  border-left: 2.5px solid #d4a359;
-  border-right: 3px solid #00d9ff;
+  border-left: 2px solid #d4a359;
+  border-right: 2px solid #00d9ff;
+  border-radius: 0 0 8px 2px;
+}
+
+/* 3D Cylindrical Barrel Curvature Shading inside Cutaway Drum */
+.drum-cylinder-shading {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.82) 0%,
+    rgba(45, 65, 95, 0.22) 18%,
+    rgba(120, 160, 210, 0.12) 30%,
+    rgba(15, 23, 36, 0.05) 50%,
+    rgba(0, 0, 0, 0.45) 82%,
+    rgba(0, 0, 0, 0.88) 100%
+  );
+  pointer-events: none;
+}
+
+/* Internal Steel Axle Bushing Collar visible inside Cutaway Drum */
+.drum-axle-collar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 28px;
+  transform: translateY(-50%);
+  background: linear-gradient(
+    180deg,
+    rgba(18, 25, 36, 0.55) 0%,
+    rgba(130, 150, 178, 0.25) 35%,
+    rgba(212, 163, 89, 0.22) 50%,
+    rgba(40, 52, 70, 0.45) 75%,
+    rgba(8, 12, 18, 0.65) 100%
+  );
+  border-top: 1px dashed rgba(212, 163, 89, 0.28);
+  border-bottom: 1px dashed rgba(212, 163, 89, 0.22);
+  pointer-events: none;
 }
 
 .drum-glass-glare {
   position: absolute;
   inset: 0;
-  background: linear-gradient(125deg, rgba(255, 255, 255, 0.07) 0%, transparent 40%, rgba(0, 217, 255, 0.03) 100%);
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, transparent 12%, transparent 88%, rgba(0, 0, 0, 0.6) 100%),
+    linear-gradient(125deg, rgba(255, 255, 255, 0.07) 0%, transparent 40%, rgba(0, 217, 255, 0.03) 100%);
   pointer-events: none;
 }
 
 .drum-tag {
   position: absolute;
-  bottom: 3px;
+  bottom: 4px;
   left: 0;
   right: 0;
   text-align: center;
-  font-size: 0.52rem;
-  color: rgba(180, 198, 224, 0.45);
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: rgba(212, 163, 89, 0.55);
   letter-spacing: 0.7px;
   pointer-events: none;
   text-transform: uppercase;
+  text-shadow: 0 1px 2px #000;
 }
 
 /* Integrated Spindle Signal Trace Bar */
