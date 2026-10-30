@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enigma Decoder · DevFest Prague 2026 Vibe Lounge</title>
+  <meta name="description" content="Live Enigma I machine decoder cracking the DevFest Prague 2026 agenda broadcasts. Built with Antigravity.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;700&family=Special+Elite&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="logo-badge">ENIGMA I</div>
+        <div class="brand-text">
+          <h1>
+            DEVFEST CRACKER
+            <span class="pill">VIBE LOUNGE 2026</span>
+          </h1>
+          <p>Real-Time Military Cipher Interception & Agenda Decoder</p>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <div class="live-status-pill">
+          <span class="pulse-dot" id="status-pulse"></span>
+          <span id="api-status-text">LISTENING FOR BROADCASTS</span>
+        </div>
+
+        <button class="btn-icon" id="btn-sound-toggle" title="Toggle mechanical sound FX">
+          <span id="sound-icon">🔊</span>
+          <span id="sound-label">Audio ON</span>
+        </button>
+
+        <button class="btn-icon" id="btn-quick-refresh" title="Check for new transmission now">
+          <span>🔄</span>
+          <span>Sync Now</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="container">
+    <!-- Left: Authentic Enigma I Machine Simulation -->
+    <section class="machine-chassis">
+      <div class="chassis-plate">
+        <div class="chassis-plate-title">
+          <span>⚡ CHIFFRIERMASCHINE ENIGMA I</span>
+        </div>
+        <div class="chassis-plate-serial">
+          SERIEN-NR: DF-PRG-2026 / REFLECTOR B / RINGS AAA
+        </div>
+      </div>
+
+      <!-- Rotors Section -->
+      <div class="rotors-section">
+        <div class="rotors-header">
+          <h3>Walzenlage (Rotors I - II - III)</h3>
+          <div style="font-size: 0.75rem; color: var(--text-dim);">
+            Double-stepping active (Notches: Q, E, V)
+          </div>
+        </div>
+
+        <div class="rotors-grid">
+          <!-- Left Rotor I -->
+          <div class="rotor-unit" data-rotor-idx="0">
+            <span class="rotor-label">Rotor I (Left)</span>
+            <span class="rotor-notch-indicator" id="notch-0">Turnover: Q</span>
+            <div class="rotor-wheel">
+              <button class="rotor-step-btn" data-step-rotor="0" data-dir="up" title="Step Up">▲</button>
+              <div class="rotor-window" id="rotor-val-0">A</div>
+              <button class="rotor-step-btn" data-step-rotor="0" data-dir="down" title="Step Down">▼</button>
+            </div>
+          </div>
+
+          <!-- Middle Rotor II -->
+          <div class="rotor-unit" data-rotor-idx="1">
+            <span class="rotor-label">Rotor II (Mid)</span>
+            <span class="rotor-notch-indicator" id="notch-1">Turnover: E</span>
+            <div class="rotor-wheel">
+              <button class="rotor-step-btn" data-step-rotor="1" data-dir="up" title="Step Up">▲</button>
+              <div class="rotor-window" id="rotor-val-1">A</div>
+              <button class="rotor-step-btn" data-step-rotor="1" data-dir="down" title="Step Down">▼</button>
+            </div>
+          </div>
+
+          <!-- Right Rotor III -->
+          <div class="rotor-unit" data-rotor-idx="2">
+            <span class="rotor-label">Rotor III (Right)</span>
+            <span class="rotor-notch-indicator" id="notch-2">Turnover: V</span>
+            <div class="rotor-wheel">
+              <button class="rotor-step-btn" data-step-rotor="2" data-dir="up" title="Step Up">▲</button>
+              <div class="rotor-window" id="rotor-val-2">A</div>
+              <button class="rotor-step-btn" data-step-rotor="2" data-dir="down" title="Step Down">▼</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lampboard (Glühlampenfeld) -->
+      <div class="lampboard-section">
+        <div class="lampboard-title">Glühlampenfeld · Lampboard Indicator</div>
+        <div class="lampboard-grid" id="lampboard">
+          <!-- Row 1: Q W E R T Z U I O -->
+          <div class="lamp-row">
+            <div class="lamp" data-lamp="Q">Q</div>
+            <div class="lamp" data-lamp="W">W</div>
+            <div class="lamp" data-lamp="E">E</div>
+            <div class="lamp" data-lamp="R">R</div>
+            <div class="lamp" data-lamp="T">T</div>
+            <div class="lamp" data-lamp="Z">Z</div>
+            <div class="lamp" data-lamp="U">U</div>
+            <div class="lamp" data-lamp="I">I</div>
+            <div class="lamp" data-lamp="O">O</div>
+          </div>
+          <!-- Row 2: A S D F G H J K -->
+          <div class="lamp-row">
+            <div class="lamp" data-lamp="A">A</div>
+            <div class="lamp" data-lamp="S">S</div>
+            <div class="lamp" data-lamp="D">D</div>
+            <div class="lamp" data-lamp="F">F</div>
+            <div class="lamp" data-lamp="G">G</div>
+            <div class="lamp" data-lamp="H">H</div>
+            <div class="lamp" data-lamp="J">J</div>
+            <div class="lamp" data-lamp="K">K</div>
+          </div>
+          <!-- Row 3: P Y X C V B N M -->
+          <div class="lamp-row">
+            <div class="lamp" data-lamp="P">P</div>
+            <div class="lamp" data-lamp="Y">Y</div>
+            <div class="lamp" data-lamp="X">X</div>
+            <div class="lamp" data-lamp="C">C</div>
+            <div class="lamp" data-lamp="V">V</div>
+            <div class="lamp" data-lamp="B">B</div>
+            <div class="lamp" data-lamp="N">N</div>
+            <div class="lamp" data-lamp="M">M</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Keyboard (Tastatur) -->
+      <div class="keyboard-section">
+        <div class="lampboard-title">Tastatur · Mechanical Keyboard (Type or Click)</div>
+        <div class="keyboard-grid" id="keyboard">
+          <!-- Row 1: Q W E R T Z U I O -->
+          <div class="key-row">
+            <button class="key-btn" data-key="Q">Q</button>
+            <button class="key-btn" data-key="W">W</button>
+            <button class="key-btn" data-key="E">E</button>
+            <button class="key-btn" data-key="R">R</button>
+            <button class="key-btn" data-key="T">T</button>
+            <button class="key-btn" data-key="Z">Z</button>
+            <button class="key-btn" data-key="U">U</button>
+            <button class="key-btn" data-key="I">I</button>
+            <button class="key-btn" data-key="O">O</button>
+          </div>
+          <!-- Row 2: A S D F G H J K -->
+          <div class="key-row">
+            <button class="key-btn" data-key="A">A</button>
+            <button class="key-btn" data-key="S">S</button>
+            <button class="key-btn" data-key="D">D</button>
+            <button class="key-btn" data-key="F">F</button>
+            <button class="key-btn" data-key="G">G</button>
+            <button class="key-btn" data-key="H">H</button>
+            <button class="key-btn" data-key="J">J</button>
+            <button class="key-btn" data-key="K">K</button>
+          </div>
+          <!-- Row 3: P Y X C V B N M -->
+          <div class="key-row">
+            <button class="key-btn" data-key="P">P</button>
+            <button class="key-btn" data-key="Y">Y</button>
+            <button class="key-btn" data-key="X">X</button>
+            <button class="key-btn" data-key="C">C</button>
+            <button class="key-btn" data-key="V">V</button>
+            <button class="key-btn" data-key="B">B</button>
+            <button class="key-btn" data-key="N">N</button>
+            <button class="key-btn" data-key="M">M</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Electrical Signal Flow Visualizer -->
+      <div class="signal-flow-box">
+        <span class="signal-flow-title">CIRCUIT TRACE:</span>
+        <div class="signal-flow-steps" id="circuit-trace">
+          <span class="flow-step">Awaiting keypress...</span>
+        </div>
+      </div>
+
+      <!-- Plugboard (Steckerbrett) -->
+      <div class="plugboard-section">
+        <div class="plugboard-header">
+          <h4>Steckerbrett (Plugboard Pairs)</h4>
+          <span style="font-size: 0.72rem; color: var(--text-dim);">DevFest Standard: DE · VF · ST</span>
+        </div>
+        <div class="plug-pairs-list" id="plugboard-pairs">
+          <div class="plug-badge">🔌 D ⇄ E</div>
+          <div class="plug-badge">🔌 V ⇄ F</div>
+          <div class="plug-badge">🔌 S ⇄ T</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Signal Intercepts, Agenda, Manual Lab, Submit -->
+    <aside class="sidebar">
+      <div class="sidebar-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>📡 INTELLIGENCE STATION</span>
+          </div>
+          <span class="countdown-badge" id="ticker-badge">NEXT BROADCAST: 60s</span>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="tabs-nav">
+          <button class="tab-btn active" data-tab="tab-intercepts">Intercepts</button>
+          <button class="tab-btn" data-tab="tab-agenda">DevFest Agenda</button>
+          <button class="tab-btn" data-tab="tab-vibelab">Vibe Lab</button>
+          <button class="tab-btn" data-tab="tab-submit">Submit Decoder</button>
+        </nav>
+
+        <!-- Tab 1: Live Intercepts -->
+        <div class="tab-content active" id="tab-intercepts">
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">
+            Intercepted from <code style="color: var(--neon-cyan);">/api/transmissions</code>. Click any transmission to load into Enigma.
+          </p>
+          <div class="transmissions-list" id="tx-list">
+            <div style="text-align: center; color: var(--text-dim); padding: 24px;">
+              Tuning receiver frequency...
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Decoded DevFest Agenda -->
+        <div class="tab-content" id="tab-agenda">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <p style="font-size: 0.75rem; color: var(--text-muted);">
+              Decoded conference schedule from live broadcasts:
+            </p>
+            <input type="text" id="agenda-filter" placeholder="Search talk / speaker..." class="input-field" style="padding: 4px 8px; font-size: 0.75rem; width: 140px;">
+          </div>
+          <div class="agenda-list" id="agenda-list">
+            <div style="text-align: center; color: var(--text-dim); padding: 24px;">
+              Deciphering schedule...
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Manual Codebreaker / Vibe Lab -->
+        <div class="tab-content" id="tab-vibelab">
+          <div class="vibe-lab-panel">
+            <div class="input-group">
+              <label>Input Text (Plaintext or Ciphertext)</label>
+              <textarea id="lab-input" class="textarea-field" placeholder="Type or paste text to encode/decode...">HELLO DEVFEST</textarea>
+            </div>
+
+            <div class="vibe-lab-controls">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <label style="font-size: 0.75rem; color: var(--text-muted);">Start Position:</label>
+                <input type="text" id="lab-start-pos" value="AAA" maxlength="3" class="input-field" style="width: 54px; text-align: center; font-weight: bold; text-transform: uppercase;">
+              </div>
+
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-primary" id="btn-lab-decode">⚡ Decrypt / Encrypt</button>
+                <button class="btn-icon" id="btn-lab-simulate" title="Animate letter-by-letter on the Enigma machine">▶ Animate</button>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label>Output Text (Enigma is reciprocal)</label>
+              <textarea id="lab-output" class="textarea-field" readonly placeholder="Output will appear here..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Submit Decoder to DevFest Lounge Screen -->
+        <div class="tab-content" id="tab-submit">
+          <div class="submit-panel">
+            <p style="font-size: 0.78rem; color: var(--text-muted);">
+              Put your decoder on the big screen in the DevFest Vibe Lounge! Submits directly to <code style="color: var(--neon-cyan);">POST /api/entries</code>.
+            </p>
+
+            <form id="submit-form" style="display: flex; flex-direction: column; gap: 12px;">
+              <div class="input-group">
+                <label for="sub-team">Team or Agent Name</label>
+                <input type="text" id="sub-team" required maxlength="40" value="Matt Skala & Antigravity" class="input-field">
+              </div>
+
+              <div class="input-group">
+                <label for="sub-url">Deployed Public URL (https://)</label>
+                <input type="url" id="sub-url" required maxlength="200" placeholder="https://mattskala.github.io/devfest2026-enigma/" class="input-field">
+              </div>
+
+              <button type="submit" class="btn-primary" id="btn-submit-entry" style="justify-content: center;">
+                🚀 Transmit to Leaderboard
+              </button>
+
+              <div class="submit-result-msg" id="submit-result"></div>
+            </form>
+
+            <div style="margin-top: 16px; border-top: 1px solid var(--chassis-border); padding-top: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-muted); text-transform: uppercase;">Decoders on the Board</span>
+                <button class="btn-mini" id="btn-refresh-entries">Refresh</button>
+              </div>
+              <div class="leaderboard-list" id="leaderboard-list">
+                <div style="font-size: 0.72rem; color: var(--text-dim);">Loading leaderboard...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p>
+      Created for <strong>DevFest Prague 2026</strong> · Vibe Lounge Enigma Challenge · Powered by <strong>Antigravity</strong> & <strong>Gemini</strong>
+    </p>
+    <p style="margin-top: 4px;">
+      Source Code on <a href="https://github.com/MattSkala/devfest2026-enigma" target="_blank" rel="noopener">GitHub</a> · 
+      Target: <a href="https://devfest-vibe-lounge.web.app/" target="_blank" rel="noopener">devfest-vibe-lounge.web.app</a>
+    </p>
+  </footer>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
