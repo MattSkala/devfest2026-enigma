@@ -171,13 +171,15 @@ body {
   margin: 0 auto;
   padding: 24px 20px;
   display: grid;
-  grid-template-columns: 1fr 430px;
+  grid-template-columns: minmax(0, 1fr) 430px;
   gap: 24px;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 @media (max-width: 1080px) {
   .container {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -192,6 +194,9 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     inset 0 -2px 0 rgba(0, 0, 0, 0.5);
   position: relative;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .chassis-plate {
@@ -461,23 +466,28 @@ body {
   font-size: 0.78rem;
   color: var(--text-muted);
   display: flex;
-  align-items: center;
-  gap: 10px;
-  overflow-x: auto;
-  white-space: nowrap;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .signal-flow-title {
   color: var(--brass);
   font-weight: bold;
   letter-spacing: 1px;
+  font-size: 0.75rem;
 }
 
 .signal-flow-steps {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
   font-family: var(--font-mono);
+  min-width: 0;
+  max-width: 100%;
 }
 
 .flow-step {
@@ -545,6 +555,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .sidebar-panel {
@@ -553,6 +565,9 @@ body {
   border-radius: var(--radius-lg);
   padding: 20px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .panel-header {
@@ -940,4 +955,23 @@ body {
 
 .app-footer a:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .lamp, .key-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+  .lamp-row, .key-row {
+    gap: 4px;
+  }
+  .rotor-window {
+    width: 48px;
+    height: 48px;
+    font-size: 1.6rem;
+  }
+  .rotors-grid {
+    gap: 8px;
+  }
 }
