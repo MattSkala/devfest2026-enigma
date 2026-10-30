@@ -17,11 +17,20 @@ const state = {
   selectedPlugSocket: null,
   nextFetchCountdown: 15,
   currentLitLamp: null,
-  litTimer: null
+  litTimer: null,
+  lastTrace: null
 };
 
 // DOM Elements
 const elements = {
+  machineChassis: document.getElementById("machine-chassis"),
+  loomSvg: document.getElementById("machine-loom-svg"),
+  signalSvg: document.getElementById("machine-signal-svg"),
+  drumUkw: document.getElementById("drum-ukw"),
+  drumR1: document.getElementById("drum-r1"),
+  drumR2: document.getElementById("drum-r2"),
+  drumR3: document.getElementById("drum-r3"),
+  drumEtw: document.getElementById("drum-etw"),
   rotorVals: [
     document.getElementById("rotor-val-0"),
     document.getElementById("rotor-val-1"),
@@ -32,7 +41,6 @@ const elements = {
     document.getElementById("notch-1"),
     document.getElementById("notch-2")
   ],
-  internalsSvg: document.getElementById("enigma-internals-svg"),
   circuitTrace: document.getElementById("circuit-trace"),
   circuitBayStatus: document.getElementById("circuit-bay-status"),
   lampboard: document.getElementById("lampboard"),
@@ -93,10 +101,10 @@ function updateRotorUI() {
     const isNotch = state.machine.rotorPositions[i] === state.machine.notchPositions[i];
     if (isNotch) {
       elements.notchIndicators[i].classList.add("on-notch");
-      elements.notchIndicators[i].textContent = `Turnover: ${ENIGMA_CONFIG.rotors[i].notch} (ACTIVE)`;
+      elements.notchIndicators[i].textContent = `Notch: ${ENIGMA_CONFIG.rotors[i].notch} ★`;
     } else {
       elements.notchIndicators[i].classList.remove("on-notch");
-      elements.notchIndicators[i].textContent = `Turnover: ${ENIGMA_CONFIG.rotors[i].notch}`;
+      elements.notchIndicators[i].textContent = `Notch: ${ENIGMA_CONFIG.rotors[i].notch}`;
     }
   }
 }
@@ -120,46 +128,206 @@ function lightLamp(char) {
   }
 }
 
+/**
+ * Renders the full-machine internal copper wiring harness (loomSvg)
+ * and the live exposed rotor commutators + active electrical signal flow (signalSvg)
+ * directly across the actual DOM Keys, Plugboard sockets, Rotors, and Lamps.
+ */
 function drawInternals(trace) {
-  if (!elements.internalsSvg) return;
+  state.lastTrace = trace || null;
+  if (!elements.machineChassis || !elements.loomSvg || !elements.signalSvg) return;
 
-  const width = 840;
-  const height = 260;
-  const getY = (idx) => 44 + idx * 7.4;
+  // Highlight active key and lamp at rest for trace inspection
+  elements.keyboard.querySelectorAll(".key-btn.traced").forEach(el => el.classList.remove("traced"));
+  elements.lampboard.querySelectorAll(".lamp.traced").forEach(el => el.classList.remove("traced"));
 
-  const pos = state.machine.getPositions();
-  const r3Pos = pos[2];
-  const r2Pos = pos[1];
-  const r1Pos = pos[0];
+  if (trace && trace.steps && trace.steps.length >= 9) {
+    const activeKeyEl = elements.keyboard.querySelector(`[data-key="${trace.input}"]`);
+    const activeLampEl = elements.lampboard.querySelector(`[data-lamp="${trace.steps[8].val}"]`);
+    if (activeKeyEl) activeKeyEl.classList.add("traced");
+    if (activeLampEl) activeLampEl.classList.add("traced");
+  }
 
-  // Column X Coordinates
-  const xKey = 45;
-  const xPlugIn = 120;
-  const xPlugOut = 175;
-  const xR3In = 270;
-  const xR3Out = 345;
-  const xR2In = 430;
-  const xR2Out = 505;
-  const xR1In = 590;
-  const xR1Out = 665;
-  const xRef = 760;
+  const chassisRect = elements.machineChassis.getBoundingClientRect();
+  if (chassisRect.width === 0 || chassisRect.height === 0) return;
 
-  let svg = `
+  const W = chassisRect.width;
+  const H = chassisRect.height;
+
+  elements.loomSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  elements.signalSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+
+  const relRect = (el) => {
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return {
+      left: r.left - chassisRect.left,
+      right: r.right - chassisRect.left,
+      top: r.top - chassisRect.top,
+      bottom: r.bottom - chassisRect.top,
+      cx: r.left - chassisRect.left + r.width / 2,
+      cy: r.top - chassisRect.top + r.height / 2,
+      width: r.width,
+      height: r.height
+    };
+  };
+
+  const ukwRect = relRect(elements.drumUkw);
+  const r1Rect = relRect(elements.drumR1);
+  const r2Rect = relRect(elements.drumR2);
+  const r3Rect = relRect(elements.drumR3);
+  const etwRect = relRect(elements.drumEtw);
+
+  if (!ukwRect || !r1Rect || !r2Rect || !r3Rect || !etwRect) return;
+
+  // Map all 26 keys, lamps, and plugboard sockets
+  const keyRects = new Map();
+  elements.keyboard.querySelectorAll("[data-key]").forEach(el => {
+    keyRects.set(el.dataset.key, relRect(el));
+  });
+
+  const lampRects = new Map();
+  elements.lampboard.querySelectorAll("[data-lamp]").forEach(el => {
+    lampRects.set(el.dataset.lamp, relRect(el));
+  });
+
+  const sockRects = new Map();
+  if (elements.steckerGrid) {
+    elements.steckerGrid.querySelectorAll(".stecker-socket[data-letter]").forEach(el => {
+      sockRects.set(el.dataset.letter, relRect(el));
+    });
+  }
+
+  const getPinY = (dRect, idx) => {
+    const pad = 11;
+    const usable = Math.max(30, dRect.height - pad * 2);
+    return dRect.top + pad + (idx / 25) * usable;
+  };
+
+  // Left and Right Chassis Harness Bus Channels
+  const xLeftBus = 14;
+  const xRightBus = W - 14;
+
+  // -------------------------------------------------------------------------
+  // 1. RENDER PERMANENT SKEUOMORPHIC COPPER WIRING HARNESS (loomSvg)
+  // -------------------------------------------------------------------------
+  let loom = `
     <defs>
-      <linearGradient id="drumGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stop-color="#1c2533" />
-        <stop offset="50%" stop-color="#121822" />
-        <stop offset="100%" stop-color="#0a0e16" />
+      <linearGradient id="copperTrunkGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#5c3818" />
+        <stop offset="50%" stop-color="#d4944e" />
+        <stop offset="100%" stop-color="#5c3818" />
       </linearGradient>
-      <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur stdDeviation="2.5" result="blur" />
+    </defs>
+  `;
+
+  const trunkTopY = etwRect.top + 8;
+  const trunkBotY = H - 24;
+
+  // Left Return Bus Trunk (Lampboard <-> Steckerbrett <-> Rotors)
+  loom += `
+    <line x1="${xLeftBus - 3}" y1="${trunkTopY}" x2="${xLeftBus - 3}" y2="${trunkBotY}" stroke="#6e4720" stroke-width="2" stroke-opacity="0.55" />
+    <line x1="${xLeftBus}" y1="${trunkTopY}" x2="${xLeftBus}" y2="${trunkBotY}" stroke="#c88a4b" stroke-width="2.5" stroke-opacity="0.65" />
+    <line x1="${xLeftBus + 3}" y1="${trunkTopY}" x2="${xLeftBus + 3}" y2="${trunkBotY}" stroke="#8a5a2b" stroke-width="1.5" stroke-opacity="0.5" />
+  `;
+
+  // Right Forward/Return Stator Harness Trunk (Keyboard <-> Steckerbrett <-> ETW)
+  loom += `
+    <line x1="${xRightBus - 3}" y1="${trunkTopY}" x2="${xRightBus - 3}" y2="${trunkBotY}" stroke="#1c5d78" stroke-width="1.8" stroke-opacity="0.55" />
+    <line x1="${xRightBus}" y1="${trunkTopY}" x2="${xRightBus}" y2="${trunkBotY}" stroke="#b87a3d" stroke-width="2.5" stroke-opacity="0.65" />
+    <line x1="${xRightBus + 3}" y1="${trunkTopY}" x2="${xRightBus + 3}" y2="${trunkBotY}" stroke="#6e4720" stroke-width="2" stroke-opacity="0.55" />
+  `;
+
+  // Brass Harness Clamps along Left & Right Trunks
+  for (let cy = trunkTopY + 45; cy < trunkBotY - 20; cy += 95) {
+    loom += `
+      <rect x="${xLeftBus - 6}" y="${cy}" width="12" height="5" rx="1.5" fill="#b88a44" stroke="#3d280d" stroke-width="0.8" opacity="0.8" />
+      <rect x="${xRightBus - 6}" y="${cy}" width="12" height="5" rx="1.5" fill="#b88a44" stroke="#3d280d" stroke-width="0.8" opacity="0.8" />
+    `;
+  }
+
+  // Horizontal Copper Bus Bars under each Lamp Row
+  elements.lampboard.querySelectorAll(".lamp-row").forEach(rowEl => {
+    const rRect = relRect(rowEl);
+    if (!rRect) return;
+    const busY = rRect.bottom + 5;
+    loom += `
+      <line x1="${xLeftBus}" y1="${busY}" x2="${rRect.right + 12}" y2="${busY}" stroke="#b87a3d" stroke-width="1.8" stroke-opacity="0.45" />
+      <line x1="${xLeftBus}" y1="${busY + 2.5}" x2="${rRect.right + 12}" y2="${busY + 2.5}" stroke="#704820" stroke-width="1" stroke-opacity="0.4" />
+      <circle cx="${xLeftBus}" cy="${busY}" r="3" fill="#d4a359" opacity="0.7" />
+    `;
+  });
+
+  // Horizontal Switch Bus Bars under each Key Row
+  elements.keyboard.querySelectorAll(".key-row").forEach(rowEl => {
+    const rRect = relRect(rowEl);
+    if (!rRect) return;
+    const busY = rRect.bottom + 6;
+    loom += `
+      <line x1="${rRect.left - 12}" y1="${busY}" x2="${xRightBus}" y2="${busY}" stroke="#298099" stroke-width="1.8" stroke-opacity="0.45" />
+      <line x1="${rRect.left - 12}" y1="${busY + 2.5}" x2="${xRightBus}" y2="${busY + 2.5}" stroke="#8c6227" stroke-width="1" stroke-opacity="0.4" />
+      <circle cx="${xRightBus}" cy="${busY}" r="3" fill="#00d9ff" opacity="0.65" />
+    `;
+  });
+
+  // 26 Individual Copper Leads: Keys -> Steckerbrett & Steckerbrett -> Lamps & ETW -> Right Trunk
+  const alphabet = ENIGMA_CONFIG.alphabet;
+  for (let i = 0; i < 26; i++) {
+    const letter = alphabet[i];
+    const kRect = keyRects.get(letter);
+    const lRect = lampRects.get(letter);
+    const sRect = sockRects.get(letter);
+
+    // ETW Stator Fan-out into Right Harness Trunk
+    const etwPinY = getPinY(etwRect, i);
+    loom += `
+      <path d="M ${etwRect.right - 4} ${etwPinY} C ${etwRect.right + 10} ${etwPinY}, ${xRightBus - 6} ${etwPinY + 8}, ${xRightBus} ${etwPinY + 14}"
+            fill="none" stroke="#b87a3d" stroke-width="0.9" stroke-opacity="0.42" />
+    `;
+
+    if (kRect && sRect) {
+      const kx = kRect.cx;
+      const ky = kRect.bottom + 3;
+      const sx = sRect.cx;
+      const sy = sRect.top + 4;
+      const midY = ky + (sy - ky) * 0.52;
+      // Enamelled copper wire from Key Switch to Plugboard Socket
+      loom += `
+        <path d="M ${kx} ${ky} C ${kx} ${midY}, ${sx} ${midY}, ${sx} ${sy}"
+              fill="none" stroke="#c8823c" stroke-width="0.95" stroke-opacity="0.24" />
+      `;
+    }
+
+    if (lRect && sRect) {
+      const lx = lRect.cx;
+      const ly = lRect.bottom + 3;
+      const sx = sRect.cx;
+      const sy = sRect.top + 4;
+      const midY = ly + (sy - ly) * 0.45;
+      // Return wire trace between Plugboard Socket and Lamp Socket
+      loom += `
+        <path d="M ${sx} ${sy} C ${sx} ${midY}, ${lx} ${midY}, ${lx} ${ly}"
+              fill="none" stroke="#6488a8" stroke-width="0.75" stroke-opacity="0.16" />
+      `;
+    }
+  }
+
+  elements.loomSvg.innerHTML = loom;
+
+  // -------------------------------------------------------------------------
+  // 2. RENDER EXPOSED ROTOR COMMUTATORS & LIVE SIGNAL CONDUCTION (signalSvg)
+  // -------------------------------------------------------------------------
+  let sig = `
+    <defs>
+      <filter id="cyanGlow" x="-25%" y="-25%" width="150%" height="150%">
+        <feGaussianBlur stdDeviation="3" result="blur" />
         <feMerge>
           <feMergeNode in="blur" />
           <feMergeNode in="SourceGraphic" />
         </feMerge>
       </filter>
-      <filter id="amberGlow" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur stdDeviation="2.5" result="blur" />
+      <filter id="amberGlow" x="-25%" y="-25%" width="150%" height="150%">
+        <feGaussianBlur stdDeviation="3" result="blur" />
         <feMerge>
           <feMergeNode in="blur" />
           <feMergeNode in="SourceGraphic" />
@@ -168,209 +336,283 @@ function drawInternals(trace) {
     </defs>
   `;
 
-  // Draw Rotor Drums (Cylinders)
-  const drums = [
-    { x: 260, w: 95, label: `ROTOR III [${r3Pos}]`, notch: "V", isNotch: r3Pos === "V" },
-    { x: 420, w: 95, label: `ROTOR II [${r2Pos}]`, notch: "E", isNotch: r2Pos === "E" },
-    { x: 580, w: 95, label: `ROTOR I [${r1Pos}]`, notch: "Q", isNotch: r1Pos === "Q" },
-    { x: 745, w: 65, label: `REFLECTOR B`, notch: "", isNotch: false }
-  ];
+  const r1Offset = state.machine.rotorPositions[0];
+  const r2Offset = state.machine.rotorPositions[1];
+  const r3Offset = state.machine.rotorPositions[2];
 
-  for (const d of drums) {
-    svg += `
-      <rect x="${d.x}" y="28" width="${d.w}" height="220" rx="5" fill="url(#drumGrad)" stroke="#2b384c" stroke-width="1.2" />
-      <text x="${d.x + d.w / 2}" y="20" fill="${d.isNotch ? '#ff3344' : '#8fa2be'}" font-size="9" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="middle" letter-spacing="0.5">
-        ${d.label} ${d.isNotch ? '★ NOTCH' : ''}
-      </text>
-    `;
-  }
+  // Helper to draw all 26 internal rotor wires & brass contact pins inside each cutaway rotor drum
+  const drawRotorDrumInternals = (dRect, wiring, offset) => {
+    const xLeft = dRect.left + 6;
+    const xRight = dRect.right - 6;
+    let out = "";
 
-  // Column Headers for Key and Plugboard
-  svg += `
-    <text x="${xKey}" y="20" fill="#8fa2be" font-size="9" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="middle">KEY / LAMP</text>
-    <text x="${(xPlugIn + xPlugOut) / 2}" y="20" fill="#8fa2be" font-size="9" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="middle">PLUGBOARD</text>
-  `;
-
-  // Draw Contact Pins (26 dots for each column)
-  const pinCols = [xPlugIn, xPlugOut, xR3In, xR3Out, xR2In, xR2Out, xR1In, xR1Out, xRef];
-  for (const col of pinCols) {
     for (let i = 0; i < 26; i++) {
-      const y = getY(i);
-      svg += `<circle cx="${col}" cy="${y}" r="1.6" fill="#313f54" />`;
-    }
-  }
-
-  // Draw Faint Internal Ghost Wires inside Rotors to reveal the complex internals!
-  const drawGhostWires = (x1, x2, wiring, offset = 0) => {
-    let wires = "";
-    for (let i = 0; i < 26; i += 2) { // draw half the wires as ghost to keep diagram crisp
       const inPin = (i + offset) % 26;
-      const outPin = (wiring.charCodeAt(inPin) - 65 - offset + 26) % 26;
-      wires += `<path d="M ${x1} ${getY(inPin)} C ${x1 + 30} ${getY(inPin)}, ${x2 - 30} ${getY(outPin)}, ${x2} ${getY(outPin)}" fill="none" stroke="#263447" stroke-width="0.75" stroke-opacity="0.6" />`;
+      const wired = wiring.charCodeAt(inPin) - 65;
+      const outIdx = (wired - offset + 26) % 26;
+
+      const yIn = getPinY(dRect, i);
+      const yOut = getPinY(dRect, outIdx);
+
+      // Alternating copper/brass tint for internal insulated rotor wires
+      const strokeColor = i % 2 === 0 ? "#8a6236" : "#435c7a";
+      const opacity = i % 2 === 0 ? "0.48" : "0.38";
+
+      out += `
+        <path d="M ${xRight} ${yIn} C ${xRight - dRect.width * 0.35} ${yIn}, ${xLeft + dRect.width * 0.35} ${yOut}, ${xLeft} ${yOut}"
+              fill="none" stroke="${strokeColor}" stroke-width="0.9" stroke-opacity="${opacity}" />
+        <circle cx="${xLeft}" cy="${yIn}" r="1.5" fill="#d4a359" opacity="0.8" />
+        <circle cx="${xRight}" cy="${yIn}" r="1.5" fill="#d4a359" opacity="0.8" />
+      `;
     }
-    return wires;
+    return out;
   };
 
-  const r3Offset = r3Pos.charCodeAt(0) - 65;
-  const r2Offset = r2Pos.charCodeAt(0) - 65;
-  const r1Offset = r1Pos.charCodeAt(0) - 65;
+  sig += drawRotorDrumInternals(r1Rect, ENIGMA_CONFIG.rotors[0].wiring, r1Offset);
+  sig += drawRotorDrumInternals(r2Rect, ENIGMA_CONFIG.rotors[1].wiring, r2Offset);
+  sig += drawRotorDrumInternals(r3Rect, ENIGMA_CONFIG.rotors[2].wiring, r3Offset);
 
-  svg += drawGhostWires(xR3In, xR3Out, ENIGMA_CONFIG.rotors[2].wiring, r3Offset);
-  svg += drawGhostWires(xR2In, xR2Out, ENIGMA_CONFIG.rotors[1].wiring, r2Offset);
-  svg += drawGhostWires(xR1In, xR1Out, ENIGMA_CONFIG.rotors[0].wiring, r1Offset);
+  // Draw UKW-B (Reflector B) 26 pins & 13 internal hairpin loops
+  const ukwRightX = ukwRect.right - 6;
+  for (let i = 0; i < 26; i++) {
+    const y1 = getPinY(ukwRect, i);
+    sig += `<circle cx="${ukwRightX}" cy="${y1}" r="1.5" fill="#d4a359" opacity="0.8" />`;
 
-  // Reflector B ghost hairpin loops
-  for (let i = 0; i < 26; i += 2) {
     const pairChar = ENIGMA_CONFIG.reflector.wiring[i];
     const pairIdx = pairChar.charCodeAt(0) - 65;
     if (i < pairIdx) {
-      const y1 = getY(i);
-      const y2 = getY(pairIdx);
-      const cx = xRef + Math.min(38, Math.abs(y2 - y1) * 0.45 + 10);
-      svg += `<path d="M ${xRef} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${xRef} ${y2}" fill="none" stroke="#2a384d" stroke-width="0.75" stroke-opacity="0.6" />`;
+      const y2 = getPinY(ukwRect, pairIdx);
+      const loopSpan = Math.abs(y2 - y1);
+      const loopX = Math.max(ukwRect.left + 6, ukwRightX - (10 + (loopSpan / ukwRect.height) * (ukwRect.width - 18)));
+      sig += `
+        <path d="M ${ukwRightX} ${y1} C ${loopX} ${y1}, ${loopX} ${y2}, ${ukwRightX} ${y2}"
+              fill="none" stroke="#5b7396" stroke-width="0.95" stroke-opacity="0.48" />
+      `;
     }
   }
 
-  // -----------------------------------------------------------
-  // ACTIVE SIGNAL CONDUCTION (When a key is pressed / traced)
-  // -----------------------------------------------------------
-  if (trace && trace.steps && trace.steps.length >= 9) {
-    const s = trace.steps;
-
-    // 1. Key In
-    const inChar = trace.input;
-    const inIdx = inChar.charCodeAt(0) - 65;
-    const yKeyIn = getY(inIdx);
-
-    // 2. Plugboard In
-    const plugInVal = s[0].val;
-    const plugInIdx = s[0].idx;
-    const yPlugIn = getY(inIdx);
-    const yPlugOut = getY(plugInIdx);
-
-    // 3. Rotor III
-    const r3InPin = s[1].inPin;
-    const r3OutPin = s[1].outPin;
-    const yR3In = getY(r3InPin);
-    const yR3Out = getY(r3OutPin);
-
-    // 4. Rotor II
-    const r2InPin = s[2].inPin;
-    const r2OutPin = s[2].outPin;
-    const yR2In = getY(r2InPin);
-    const yR2Out = getY(r2OutPin);
-
-    // 5. Rotor I
-    const r1InPin = s[3].inPin;
-    const r1OutPin = s[3].outPin;
-    const yR1In = getY(r1InPin);
-    const yR1Out = getY(r1OutPin);
-
-    // 6. Reflector B
-    const refInIdx = s[4].inIdx;
-    const refOutIdx = s[4].outIdx;
-    const yRefIn = getY(refInIdx);
-    const yRefOut = getY(refOutIdx);
-
-    // Reverse return steps:
-    // 7. Rotor I Reverse
-    const r1RevIn = s[5].inIdx;
-    const r1RevOut = s[5].outIdx;
-    const yR1RevIn = getY((r1RevIn + r1Offset) % 26);
-    const yR1RevOut = getY((r1RevOut + r1Offset) % 26);
-
-    // 8. Rotor II Reverse
-    const r2RevIn = s[6].inIdx;
-    const r2RevOut = s[6].outIdx;
-    const yR2RevIn = getY((r2RevIn + r2Offset) % 26);
-    const yR2RevOut = getY((r2RevOut + r2Offset) % 26);
-
-    // 9. Rotor III Reverse
-    const r3RevIn = s[7].inIdx;
-    const r3RevOut = s[7].outIdx;
-    const yR3RevIn = getY((r3RevIn + r3Offset) % 26);
-    const yR3RevOut = getY((r3RevOut + r3Offset) % 26);
-
-    // 10. Plugboard Out to Lamp
-    const outChar = s[8].val;
-    const outIdx = s[8].idx;
-    const prePlugIdx = s[8].prePlug ? s[8].prePlug.charCodeAt(0) - 65 : outIdx;
-    const yPlugRevIn = getY(prePlugIdx);
-    const yPlugRevOut = getY(outIdx);
-    const yLampOut = getY(outIdx);
-
-    // ---------------------------------------------------------
-    // FORWARD PATH (Brilliant Neon Cyan Conduction Beam)
-    // ---------------------------------------------------------
-    const fPath = `
-      M ${xKey} ${yKeyIn}
-      L ${xPlugIn} ${yPlugIn}
-      C ${xPlugIn + 25} ${yPlugIn}, ${xPlugOut - 25} ${yPlugOut}, ${xPlugOut} ${yPlugOut}
-      L ${xR3In} ${yR3In}
-      C ${xR3In + 35} ${yR3In}, ${xR3Out - 35} ${yR3Out}, ${xR3Out} ${yR3Out}
-      L ${xR2In} ${yR2In}
-      C ${xR2In + 35} ${yR2In}, ${xR2Out - 35} ${yR2Out}, ${xR2Out} ${yR2Out}
-      L ${xR1In} ${yR1In}
-      C ${xR1In + 35} ${yR1In}, ${xR1Out - 35} ${yR1Out}, ${xR1Out} ${yR1Out}
-      L ${xRef} ${yRefIn}
-    `;
-
-    // Reflector U-turn Hairpin Loop
-    const refLoopX = xRef + Math.min(42, Math.abs(yRefOut - yRefIn) * 0.45 + 16);
-    const refLoop = `M ${xRef} ${yRefIn} C ${refLoopX} ${yRefIn}, ${refLoopX} ${yRefOut}, ${xRef} ${yRefOut}`;
-
-    // ---------------------------------------------------------
-    // REVERSE RETURN PATH (Glowing Incandescent Amber Beam)
-    // ---------------------------------------------------------
-    const rPath = `
-      M ${xRef} ${yRefOut}
-      L ${xR1Out} ${yR1RevIn}
-      C ${xR1Out - 35} ${yR1RevIn}, ${xR1In + 35} ${yR1RevOut}, ${xR1In} ${yR1RevOut}
-      L ${xR2Out} ${yR2RevIn}
-      C ${xR2Out - 35} ${yR2RevIn}, ${xR2In + 35} ${yR2RevOut}, ${xR2In} ${yR2RevOut}
-      L ${xR3Out} ${yR3RevIn}
-      C ${xR3Out - 35} ${yR3RevIn}, ${xR3In + 35} ${yR3RevOut}, ${xR3In} ${yR3RevOut}
-      L ${xPlugOut} ${yPlugRevIn}
-      C ${xPlugOut - 25} ${yPlugRevIn}, ${xPlugIn + 25} ${yPlugRevOut}, ${xPlugIn} ${yPlugRevOut}
-      L ${xKey} ${yLampOut}
-    `;
-
-    svg += `
-      <!-- Forward Glowing Cyan Wire -->
-      <path d="${fPath}" fill="none" stroke="#00e5ff" stroke-width="2.5" filter="url(#cyanGlow)" />
-      <path d="${fPath}" fill="none" stroke="#ffffff" stroke-width="1.2" />
-
-      <!-- Reflector Loop -->
-      <path d="${refLoop}" fill="none" stroke="#00e5ff" stroke-width="2.5" filter="url(#cyanGlow)" />
-      <path d="${refLoop}" fill="none" stroke="#ffffff" stroke-width="1.2" />
-
-      <!-- Reverse Glowing Amber Wire -->
-      <path d="${rPath}" fill="none" stroke="#ffaa22" stroke-width="2.5" filter="url(#amberGlow)" />
-      <path d="${rPath}" fill="none" stroke="#fff4cc" stroke-width="1.2" />
-
-      <!-- Active Pin Markers -->
-      <circle cx="${xKey}" cy="${yKeyIn}" r="5" fill="#00e5ff" filter="url(#cyanGlow)" />
-      <circle cx="${xKey}" cy="${yKeyIn}" r="2.5" fill="#ffffff" />
-      <text x="${xKey + 10}" y="${yKeyIn + 3.5}" fill="#00e5ff" font-size="9.5" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="start">
-        IN [${inChar}]
-      </text>
-
-      <circle cx="${xKey}" cy="${yLampOut}" r="5" fill="#ffaa22" filter="url(#amberGlow)" />
-      <circle cx="${xKey}" cy="${yLampOut}" r="2.5" fill="#ffffff" />
-      <text x="${xKey + 10}" y="${yLampOut + 3.5}" fill="#ffaa22" font-size="9.5" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="start">
-        OUT [${outChar}]
-      </text>
+  // Draw ETW (Entry Stator) 26 pass-through terminal bars & pins
+  const etwLeftX = etwRect.left + 6;
+  const etwRightX = etwRect.right - 6;
+  for (let i = 0; i < 26; i++) {
+    const y = getPinY(etwRect, i);
+    sig += `
+      <line x1="${etwLeftX}" y1="${y}" x2="${etwRightX}" y2="${y}" stroke="#3e526e" stroke-width="0.8" stroke-opacity="0.45" />
+      <circle cx="${etwLeftX}" cy="${y}" r="1.4" fill="#d4a359" opacity="0.8" />
+      <circle cx="${etwRightX}" cy="${y}" r="1.5" fill="#00d9ff" opacity="0.7" />
     `;
   }
 
-  elements.internalsSvg.innerHTML = svg;
+  // -------------------------------------------------------------------------
+  // 3. ACTIVE LIVE ELECTRICAL SIGNAL PATH ACROSS THE MACHINE
+  // -------------------------------------------------------------------------
+  if (trace && trace.steps && trace.steps.length >= 9) {
+    const s = trace.steps;
+
+    const inChar = trace.input;
+    const plugInVal = s[0].val;
+    const plugInIdx = s[0].idx;
+
+    const outChar = s[8].val;
+    const outIdx = s[8].idx;
+    const prePlug = s[8].prePlug || outChar;
+    const prePlugIdx = prePlug.charCodeAt(0) - 65;
+
+    const keyInRect = keyRects.get(inChar);
+    const sockInRect = sockRects.get(inChar);
+    const sockInExitRect = sockRects.get(plugInVal);
+
+    const sockOutInRect = sockRects.get(prePlug);
+    const sockOutExitRect = sockRects.get(outChar);
+    const lampOutRect = lampRects.get(outChar);
+
+    // Coordinates on the Rotor Spindle Drums
+    const yEtwIn = getPinY(etwRect, plugInIdx);
+    const yR3In = getPinY(r3Rect, s[1].inIdx);
+    const yR3Out = getPinY(r3Rect, s[1].idx);
+    const yR2In = getPinY(r2Rect, s[2].inIdx);
+    const yR2Out = getPinY(r2Rect, s[2].idx);
+    const yR1In = getPinY(r1Rect, s[3].inIdx);
+    const yR1Out = getPinY(r1Rect, s[3].idx);
+    const yRefIn = getPinY(ukwRect, s[4].inIdx);
+    const yRefOut = getPinY(ukwRect, s[4].outIdx);
+
+    // Reverse coordinates on the Rotor Spindle Drums
+    const yR1RevIn = getPinY(r1Rect, s[5].inIdx);
+    const yR1RevOut = getPinY(r1Rect, s[5].outIdx);
+    const yR2RevIn = getPinY(r2Rect, s[6].inIdx);
+    const yR2RevOut = getPinY(r2Rect, s[6].outIdx);
+    const yR3RevIn = getPinY(r3Rect, s[7].inIdx);
+    const yR3RevOut = getPinY(r3Rect, s[7].outIdx);
+    const yEtwOut = getPinY(etwRect, prePlugIdx);
+
+    // --- A. FORWARD WIRE: Key -> Steckerbrett -> ETW -> R-III -> R-II -> R-I -> UKW-B ---
+    let forwardChassisPath = "";
+    if (keyInRect && sockInRect && sockInExitRect) {
+      const kx = keyInRect.cx;
+      const ky = keyInRect.bottom + 2;
+      const s1x = sockInRect.cx;
+      const s1y = sockInRect.top + 8;
+      const midKS = ky + (s1y - ky) * 0.5;
+
+      // Key switch to Plugboard Input Socket
+      forwardChassisPath += `M ${kx} ${ky} C ${kx} ${midKS}, ${s1x} ${midKS}, ${s1x} ${s1y} `;
+
+      // If swapped on Steckerbrett, flow through the patch cable to partner socket
+      let exitX = s1x;
+      let exitY = s1y;
+      if (s[0].swapped && inChar !== plugInVal) {
+        exitX = sockInExitRect.cx;
+        exitY = sockInExitRect.top + 8;
+        const droop = Math.min(35, Math.abs(exitX - s1x) * 0.25 + 15);
+        forwardChassisPath += `C ${s1x} ${s1y + droop}, ${exitX} ${exitY + droop}, ${exitX} ${exitY} `;
+      }
+
+      // From Plugboard Output Socket -> Right Harness Channel -> Up into ETW pin
+      const chanX = W - 11;
+      forwardChassisPath += `
+        C ${exitX} ${exitY - 26}, ${chanX} ${exitY - 12}, ${chanX} ${exitY - 42}
+        L ${chanX} ${yEtwIn + 14}
+        C ${chanX} ${yEtwIn}, ${etwRightX + 8} ${yEtwIn}, ${etwRightX} ${yEtwIn}
+      `;
+    }
+
+    // Forward path across the Rotor Spindle (ETW -> R-III -> R-II -> R-I -> UKW-B)
+    const forwardSpindlePath = `
+      M ${etwRightX} ${yEtwIn}
+      L ${etwLeftX} ${yEtwIn}
+      L ${r3Rect.right - 6} ${yR3In}
+      C ${r3Rect.right - r3Rect.width * 0.35} ${yR3In}, ${r3Rect.left + r3Rect.width * 0.35} ${yR3Out}, ${r3Rect.left + 6} ${yR3Out}
+      L ${r2Rect.right - 6} ${yR2In}
+      C ${r2Rect.right - r2Rect.width * 0.35} ${yR2In}, ${r2Rect.left + r2Rect.width * 0.35} ${yR2Out}, ${r2Rect.left + 6} ${yR2Out}
+      L ${r1Rect.right - 6} ${yR1In}
+      C ${r1Rect.right - r1Rect.width * 0.35} ${yR1In}, ${r1Rect.left + r1Rect.width * 0.35} ${yR1Out}, ${r1Rect.left + 6} ${yR1Out}
+      L ${ukwRightX} ${yRefIn}
+    `;
+
+    // Reflector B U-turn Loop inside UKW-B
+    const refSpan = Math.abs(yRefOut - yRefIn);
+    const refLoopX = Math.max(ukwRect.left + 5, ukwRightX - (14 + (refSpan / ukwRect.height) * (ukwRect.width - 20)));
+    const reflectorLoopPath = `
+      M ${ukwRightX} ${yRefIn}
+      C ${refLoopX} ${yRefIn}, ${refLoopX} ${yRefOut}, ${ukwRightX} ${yRefOut}
+    `;
+
+    // --- B. RETURN WIRE: UKW-B -> R-I -> R-II -> R-III -> ETW -> Steckerbrett -> Lamp ---
+    const returnSpindlePath = `
+      M ${ukwRightX} ${yRefOut}
+      L ${r1Rect.left + 6} ${yR1RevIn}
+      C ${r1Rect.left + r1Rect.width * 0.35} ${yR1RevIn}, ${r1Rect.right - r1Rect.width * 0.35} ${yR1RevOut}, ${r1Rect.right - 6} ${yR1RevOut}
+      L ${r2Rect.left + 6} ${yR2RevIn}
+      C ${r2Rect.left + r2Rect.width * 0.35} ${yR2RevIn}, ${r2Rect.right - r2Rect.width * 0.35} ${yR2RevOut}, ${r2Rect.right - 6} ${yR2RevOut}
+      L ${r3Rect.left + 6} ${yR3RevIn}
+      C ${r3Rect.left + r3Rect.width * 0.35} ${yR3RevIn}, ${r3Rect.right - r3Rect.width * 0.35} ${yR3RevOut}, ${r3Rect.right - 6} ${yR3RevOut}
+      L ${etwLeftX} ${yEtwOut}
+      L ${etwRightX} ${yEtwOut}
+    `;
+
+    let returnChassisPath = "";
+    if (sockOutInRect && sockOutExitRect && lampOutRect) {
+      const s2x = sockOutInRect.cx;
+      const s2y = sockOutInRect.top + 10;
+      const retChanX = W - 18;
+
+      // From ETW right lug down right return channel to Plugboard Return Socket
+      returnChassisPath += `
+        M ${etwRightX} ${yEtwOut}
+        C ${etwRightX + 8} ${yEtwOut}, ${retChanX} ${yEtwOut}, ${retChanX} ${yEtwOut + 14}
+        L ${retChanX} ${s2y - 36}
+        C ${retChanX} ${s2y - 10}, ${s2x} ${s2y - 24}, ${s2x} ${s2y}
+      `;
+
+      // If swapped on Steckerbrett, flow through the patch cable to final output socket
+      let finalSockX = s2x;
+      let finalSockY = s2y;
+      if (s[8].swapped && prePlug !== outChar) {
+        finalSockX = sockOutExitRect.cx;
+        finalSockY = sockOutExitRect.top + 10;
+        const droop = Math.min(35, Math.abs(finalSockX - s2x) * 0.25 + 15);
+        returnChassisPath += `C ${s2x} ${s2y + droop}, ${finalSockX} ${finalSockY + droop}, ${finalSockX} ${finalSockY} `;
+      }
+
+      // From Final Plugboard Socket up to the Lit Lamp's bottom brass lug
+      const lx = lampOutRect.cx;
+      const ly = lampOutRect.bottom + 3;
+      const midSL = finalSockY - (finalSockY - ly) * 0.48;
+      returnChassisPath += `C ${finalSockX} ${midSL}, ${lx} ${midSL}, ${lx} ${ly}`;
+    }
+
+    const fullForward = `${forwardChassisPath} ${forwardSpindlePath}`;
+    const fullReturn = `${returnSpindlePath} ${returnChassisPath}`;
+
+    sig += `
+      <!-- Forward Conduction Beam (Cyan) -->
+      <path d="${fullForward}" fill="none" stroke="#00e5ff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.88" filter="url(#cyanGlow)" />
+      <path d="${fullForward}" fill="none" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" class="signal-pulse-path" />
+
+      <!-- Reflector Hairpin Loop -->
+      <path d="${reflectorLoopPath}" fill="none" stroke="#00e5ff" stroke-width="2.8" stroke-linecap="round" filter="url(#cyanGlow)" />
+      <path d="${reflectorLoopPath}" fill="none" stroke="#ffffff" stroke-width="1.3" class="signal-pulse-path" />
+
+      <!-- Return Conduction Beam (Incandescent Amber) -->
+      <path d="${fullReturn}" fill="none" stroke="#ffaa22" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.9" filter="url(#amberGlow)" />
+      <path d="${fullReturn}" fill="none" stroke="#fff6d6" stroke-width="1.2" stroke-linecap="round" class="signal-pulse-path" />
+    `;
+
+    // Helper for crisp pin badges on the active rotor contacts
+    const drawPinNode = (x, y, label, color, align = "left") => {
+      const dx = align === "left" ? -11 : 11;
+      return `
+        <circle cx="${x}" cy="${y}" r="3.4" fill="${color}" stroke="#ffffff" stroke-width="1" />
+        <rect x="${x + dx - 7}" y="${y - 6}" width="14" height="12" rx="2.5" fill="#070a10" stroke="${color}" stroke-width="0.9" opacity="0.92" />
+        <text x="${x + dx}" y="${y + 3}" fill="${color}" font-size="8" font-family="'JetBrains Mono', monospace" font-weight="bold" text-anchor="middle">${label}</text>
+      `;
+    };
+
+    // Pin nodes along the Rotor Spindle
+    sig += drawPinNode(etwLeftX, yEtwIn, plugInVal, "#00e5ff", "right");
+    sig += drawPinNode(r3Rect.left + 6, yR3Out, s[1].val, "#00e5ff", "right");
+    sig += drawPinNode(r2Rect.left + 6, yR2Out, s[2].val, "#00e5ff", "right");
+    sig += drawPinNode(r1Rect.left + 6, yR1Out, s[3].val, "#00e5ff", "right");
+    sig += drawPinNode(ukwRightX, yRefOut, s[4].val, "#ffaa22", "left");
+    sig += drawPinNode(r1Rect.right - 6, yR1RevOut, s[5].val, "#ffaa22", "left");
+    sig += drawPinNode(r2Rect.right - 6, yR2RevOut, s[6].val, s[6].val === s[2].val ? "#ffaa22" : "#ffaa22", "left");
+    sig += drawPinNode(r3Rect.right - 6, yR3RevOut, prePlug, "#ffaa22", "left");
+
+    // Key, Plugboard, and Lamp Terminal Nodes
+    if (keyInRect) {
+      sig += `
+        <circle cx="${keyInRect.cx}" cy="${keyInRect.bottom + 2}" r="4.5" fill="#00e5ff" stroke="#ffffff" stroke-width="1.2" filter="url(#cyanGlow)" />
+      `;
+    }
+    if (sockInRect) {
+      sig += `<circle cx="${sockInRect.cx}" cy="${sockInRect.top + 8}" r="4" fill="#00e5ff" stroke="#ffffff" stroke-width="1" />`;
+    }
+    if (s[0].swapped && sockInExitRect) {
+      sig += `<circle cx="${sockInExitRect.cx}" cy="${sockInExitRect.top + 8}" r="4" fill="#00e5ff" stroke="#ffffff" stroke-width="1" />`;
+    }
+    if (sockOutInRect) {
+      sig += `<circle cx="${sockOutInRect.cx}" cy="${sockOutInRect.top + 10}" r="4" fill="#ffaa22" stroke="#ffffff" stroke-width="1" />`;
+    }
+    if (s[8].swapped && sockOutExitRect) {
+      sig += `<circle cx="${sockOutExitRect.cx}" cy="${sockOutExitRect.top + 10}" r="4" fill="#ffaa22" stroke="#ffffff" stroke-width="1" />`;
+    }
+    if (lampOutRect) {
+      sig += `
+        <circle cx="${lampOutRect.cx}" cy="${lampOutRect.bottom + 3}" r="4.5" fill="#ffaa22" stroke="#ffffff" stroke-width="1.2" filter="url(#amberGlow)" />
+      `;
+    }
+  }
+
+  elements.signalSvg.innerHTML = sig;
+  drawSteckerCables();
 }
 
 function renderCircuitTrace(trace) {
   drawInternals(trace);
 
   if (!trace) {
-    elements.circuitTrace.innerHTML = `<span class="flow-step">Awaiting keypress...</span>`;
+    elements.circuitTrace.innerHTML = `<span class="flow-step">Press any key or replay broadcast to trace internal wiring...</span>`;
     return;
   }
 
@@ -379,9 +621,20 @@ function renderCircuitTrace(trace) {
     <span class="flow-arrow">➔</span>
     ${trace.steps.map((s, idx) => {
       const isLamp = idx === trace.steps.length - 1;
-      const stepClass = isLamp ? "flow-step lamp-step" : "flow-step";
+      const isReverse = idx >= 4 && !isLamp;
+      const stepClass = isLamp ? "flow-step lamp-step" : (isReverse ? "flow-step reverse-step" : "flow-step active");
+      const shortStage = s.stage
+        .replace("Plugboard In", "PLUG IN")
+        .replace("Rotor III (Right)", "R-III")
+        .replace("Rotor II (Mid)", "R-II")
+        .replace("Rotor I (Left)", "R-I")
+        .replace("Reflector B", "UKW-B")
+        .replace("Rotor I Reverse", "R-I ↩")
+        .replace("Rotor II Reverse", "R-II ↩")
+        .replace("Rotor III Reverse", "R-III ↩")
+        .replace("Plugboard Out", "LAMP");
       return `
-        <span class="${stepClass}">${s.stage.replace("Rotor ", "R-")}: <strong>${s.val}</strong></span>
+        <span class="${stepClass}">${shortStage}: <strong>${s.val}</strong></span>
         ${isLamp ? "" : '<span class="flow-arrow">➔</span>'}
       `;
     }).join("")}
@@ -519,7 +772,10 @@ function initSteckerbrett() {
     });
   }
 
-  window.addEventListener("resize", drawSteckerCables);
+  window.addEventListener("resize", () => {
+    drawSteckerCables();
+    drawInternals(state.lastTrace);
+  });
   updateSteckerbrettUI();
 }
 
@@ -625,6 +881,14 @@ function drawSteckerCables() {
     "#f7d154", "#2de2e6", "#ff6c00", "#38ef7d", "#ea00d9"
   ];
 
+  const trace = state.lastTrace;
+  const fwdPair = (trace && trace.steps && trace.steps[0] && trace.steps[0].swapped)
+    ? [trace.input, trace.steps[0].val].sort().join("")
+    : null;
+  const retPair = (trace && trace.steps && trace.steps[8] && trace.steps[8].swapped)
+    ? [trace.steps[8].prePlug, trace.steps[8].val].sort().join("")
+    : null;
+
   let svg = "";
   state.plugPairs.forEach((pair, idx) => {
     const sockA = elements.steckerGrid.querySelector(`.stecker-socket[data-letter="${pair[0]}"]`);
@@ -638,16 +902,21 @@ function drawSteckerCables() {
       const x2 = rectB.left + rectB.width / 2 - gridRect.left;
       const y2 = rectB.top + rectB.height / 2 - gridRect.top;
 
-      const color = colors[idx % colors.length];
+      const sortedPair = [pair[0], pair[1]].sort().join("");
+      const isFwd = sortedPair === fwdPair;
+      const isRet = sortedPair === retPair;
+
+      const color = isFwd ? "#00e5ff" : (isRet ? "#ffaa22" : colors[idx % colors.length]);
       const droop = Math.min(35, Math.abs(x2 - x1) * 0.25 + 15);
+      const pathD = `M ${x1} ${y1} C ${x1} ${y1 + droop}, ${x2} ${y2 + droop}, ${x2} ${y2}`;
 
       svg += `
-        <path d="M ${x1} ${y1} C ${x1} ${y1 + droop}, ${x2} ${y2 + droop}, ${x2} ${y2}" 
-              fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" opacity="0.85" />
-        <path d="M ${x1} ${y1} C ${x1} ${y1 + droop}, ${x2} ${y2 + droop}, ${x2} ${y2}" 
-              fill="none" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round" opacity="0.6" />
-        <circle cx="${x1}" cy="${y1}" r="3" fill="${color}" />
-        <circle cx="${x2}" cy="${y2}" r="3" fill="${color}" />
+        <path d="${pathD}" 
+              fill="none" stroke="${color}" stroke-width="${(isFwd || isRet) ? 3.5 : 2.5}" stroke-linecap="round" opacity="${(isFwd || isRet) ? 1 : 0.82}" />
+        <path d="${pathD}" 
+              fill="none" stroke="#ffffff" stroke-width="${(isFwd || isRet) ? 1.4 : 0.8}" stroke-linecap="round" opacity="${(isFwd || isRet) ? 0.95 : 0.55}" ${(isFwd || isRet) ? 'class="signal-pulse-path"' : ''} />
+        <circle cx="${x1}" cy="${y1}" r="${(isFwd || isRet) ? 4.2 : 3}" fill="${color}" stroke="#ffffff" stroke-width="0.8" />
+        <circle cx="${x2}" cy="${y2}" r="${(isFwd || isRet) ? 4.2 : 3}" fill="${color}" stroke="#ffffff" stroke-width="0.8" />
       `;
     }
   });
@@ -1102,6 +1371,7 @@ function escapeHtml(str) {
 
 // Initialize
 updateRotorUI();
-drawInternals(null);
 initSteckerbrett();
+drawInternals(null);
+setTimeout(() => drawInternals(state.lastTrace), 120);
 startPolling();

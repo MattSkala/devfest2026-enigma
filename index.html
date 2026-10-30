@@ -48,19 +48,25 @@
   <!-- Main Workspace -->
   <main class="container">
     <!-- Left: Authentic Enigma I Machine Simulation -->
-    <section class="machine-chassis">
+    <section class="machine-chassis" id="machine-chassis">
       <!-- Industrial Chassis Hex Bolts -->
       <div class="chassis-bolt chassis-bolt-tl"></div>
       <div class="chassis-bolt chassis-bolt-tr"></div>
       <div class="chassis-bolt chassis-bolt-bl"></div>
       <div class="chassis-bolt chassis-bolt-br"></div>
 
+      <!-- Full-Machine Internal Copper Wiring Harness Underlay -->
+      <svg id="machine-loom-svg" class="machine-loom-svg" aria-hidden="true"></svg>
+
+      <!-- Full-Machine Live Electrical Signal & Rotor Commutator Overlay -->
+      <svg id="machine-signal-svg" class="machine-signal-svg" aria-hidden="true"></svg>
+
       <div class="chassis-plate">
         <div class="chassis-plate-title">
-          <span>⚡ CHIFFRIERMASCHINE ENIGMA I</span>
+          <span>⚡ CHIFFRIERMASCHINE ENIGMA I // X-RAY INTERNAL TELEMETRY</span>
         </div>
         <div class="chassis-plate-serial">
-          SERIEN-NR: DF-PRG-2026 / REFLECTOR B / RINGS AAA
+          SERIEN-NR: DF-PRG-2026 / UKW-B / WALZEN I-II-III / RINGS AAA
         </div>
       </div>
 
@@ -87,54 +93,144 @@
         </div>
       </div>
 
-      <!-- Rotors Section -->
-      <div class="rotors-section">
+      <!-- Walzenlage: Integrated Rotor Spindle & Cutaway Commutator Assembly -->
+      <div class="rotors-section translucent-deck" id="rotors-section">
+        <div class="glass-screw glass-screw-tl"></div>
+        <div class="glass-screw glass-screw-tr"></div>
+        <div class="glass-screw glass-screw-bl"></div>
+        <div class="glass-screw glass-screw-br"></div>
+
         <div class="rotors-header">
-          <h3>Walzenlage (Rotors I - II - III)</h3>
-          <div style="font-size: 0.75rem; color: var(--text-dim);">
-            Double-stepping active (Notches: Q, E, V)
+          <div class="rotors-title-group">
+            <h3>⚙ WALZENLAGE // ROTOR SPINDLE &amp; EXPOSED INTERNAL WIRING</h3>
+            <span class="rotors-subtitle">DOUBLE-STEPPING PAWL RATCHET (NOTCHES: Q · E · V) · 26-PIN GOLD COMMUTATORS</span>
+          </div>
+          <span class="circuit-bay-status" id="circuit-bay-status">CIRCUIT ARMED</span>
+        </div>
+
+        <div class="spindle-assembly" id="spindle-assembly">
+          <!-- Central Steel Rotor Axle Shaft -->
+          <div class="spindle-axle" aria-hidden="true"></div>
+
+          <!-- 1. Left Stator: Umkehrwalze B (Reflector B) -->
+          <div class="spindle-stator ukw-unit" id="stator-ukw">
+            <div class="rotor-top-deck stator-top-deck">
+              <div class="rotor-unit-header">
+                <span class="rotor-label">UKW-B</span>
+                <span class="stator-sub">Reflector</span>
+              </div>
+              <div class="stator-badge-box">
+                <span class="stator-code">B</span>
+                <span class="stator-desc">Umkehrwalze</span>
+              </div>
+            </div>
+            <div class="cutaway-drum ukw-drum" id="drum-ukw" data-drum="ukw">
+              <div class="drum-glass-glare"></div>
+              <span class="drum-tag">13 REFLECTOR LOOPS</span>
+            </div>
+          </div>
+
+          <!-- 2. Left Rotor I -->
+          <div class="rotor-unit" data-rotor-idx="0">
+            <div class="rotor-top-deck">
+              <div class="rotor-unit-header">
+                <span class="rotor-label">Walze I (Left)</span>
+                <span class="rotor-notch-indicator" id="notch-0">Notch: Q</span>
+              </div>
+              <div class="rotor-wheel">
+                <div class="knurled-gear" aria-hidden="true"></div>
+                <button class="rotor-step-btn" data-step-rotor="0" data-dir="down" title="Step Down">▼</button>
+                <div class="rotor-window" id="rotor-val-0">A</div>
+                <button class="rotor-step-btn" data-step-rotor="0" data-dir="up" title="Step Up">▲</button>
+              </div>
+            </div>
+            <div class="cutaway-drum rotor-drum" id="drum-r1" data-drum="r1">
+              <div class="drum-glass-glare"></div>
+              <span class="drum-tag">WALZE I · 26-PIN COMMUTATOR</span>
+            </div>
+          </div>
+
+          <!-- 3. Middle Rotor II -->
+          <div class="rotor-unit" data-rotor-idx="1">
+            <div class="rotor-top-deck">
+              <div class="rotor-unit-header">
+                <span class="rotor-label">Walze II (Mid)</span>
+                <span class="rotor-notch-indicator" id="notch-1">Notch: E</span>
+              </div>
+              <div class="rotor-wheel">
+                <div class="knurled-gear" aria-hidden="true"></div>
+                <button class="rotor-step-btn" data-step-rotor="1" data-dir="down" title="Step Down">▼</button>
+                <div class="rotor-window" id="rotor-val-1">A</div>
+                <button class="rotor-step-btn" data-step-rotor="1" data-dir="up" title="Step Up">▲</button>
+              </div>
+            </div>
+            <div class="cutaway-drum rotor-drum" id="drum-r2" data-drum="r2">
+              <div class="drum-glass-glare"></div>
+              <span class="drum-tag">WALZE II · 26-PIN COMMUTATOR</span>
+            </div>
+          </div>
+
+          <!-- 4. Right Rotor III -->
+          <div class="rotor-unit" data-rotor-idx="2">
+            <div class="rotor-top-deck">
+              <div class="rotor-unit-header">
+                <span class="rotor-label">Walze III (Right)</span>
+                <span class="rotor-notch-indicator" id="notch-2">Notch: V</span>
+              </div>
+              <div class="rotor-wheel">
+                <div class="knurled-gear" aria-hidden="true"></div>
+                <button class="rotor-step-btn" data-step-rotor="2" data-dir="down" title="Step Down">▼</button>
+                <div class="rotor-window" id="rotor-val-2">A</div>
+                <button class="rotor-step-btn" data-step-rotor="2" data-dir="up" title="Step Up">▲</button>
+              </div>
+            </div>
+            <div class="cutaway-drum rotor-drum" id="drum-r3" data-drum="r3">
+              <div class="drum-glass-glare"></div>
+              <span class="drum-tag">WALZE III · 26-PIN COMMUTATOR</span>
+            </div>
+          </div>
+
+          <!-- 5. Right Stator: Eintrittswalze (ETW / Entry Wheel) -->
+          <div class="spindle-stator etw-unit" id="stator-etw">
+            <div class="rotor-top-deck stator-top-deck">
+              <div class="rotor-unit-header">
+                <span class="rotor-label">ETW</span>
+                <span class="stator-sub">Stator</span>
+              </div>
+              <div class="stator-badge-box">
+                <span class="stator-code">A-Z</span>
+                <span class="stator-desc">Eintrittswalze</span>
+              </div>
+            </div>
+            <div class="cutaway-drum etw-drum" id="drum-etw" data-drum="etw">
+              <div class="drum-glass-glare"></div>
+              <span class="drum-tag">ENTRY BUS</span>
+            </div>
           </div>
         </div>
 
-        <div class="rotors-grid">
-          <!-- Left Rotor I -->
-          <div class="rotor-unit" data-rotor-idx="0">
-            <span class="rotor-label">Rotor I (Left)</span>
-            <span class="rotor-notch-indicator" id="notch-0">Turnover: Q</span>
-            <div class="rotor-wheel">
-              <button class="rotor-step-btn" data-step-rotor="0" data-dir="up" title="Step Up">▲</button>
-              <div class="rotor-window" id="rotor-val-0">A</div>
-              <button class="rotor-step-btn" data-step-rotor="0" data-dir="down" title="Step Down">▼</button>
-            </div>
+        <!-- Integrated Live Signal Trace Strip -->
+        <div class="spindle-trace-bar">
+          <div class="trace-legend">
+            <span class="legend-item"><i class="legend-dot cyan"></i> Forward (Key ➔ Plug ➔ ETW ➔ UKW-B)</span>
+            <span class="legend-item"><i class="legend-dot amber"></i> Return (UKW-B ➔ ETW ➔ Plug ➔ Lamp)</span>
           </div>
-
-          <!-- Middle Rotor II -->
-          <div class="rotor-unit" data-rotor-idx="1">
-            <span class="rotor-label">Rotor II (Mid)</span>
-            <span class="rotor-notch-indicator" id="notch-1">Turnover: E</span>
-            <div class="rotor-wheel">
-              <button class="rotor-step-btn" data-step-rotor="1" data-dir="up" title="Step Up">▲</button>
-              <div class="rotor-window" id="rotor-val-1">A</div>
-              <button class="rotor-step-btn" data-step-rotor="1" data-dir="down" title="Step Down">▼</button>
-            </div>
-          </div>
-
-          <!-- Right Rotor III -->
-          <div class="rotor-unit" data-rotor-idx="2">
-            <span class="rotor-label">Rotor III (Right)</span>
-            <span class="rotor-notch-indicator" id="notch-2">Turnover: V</span>
-            <div class="rotor-wheel">
-              <button class="rotor-step-btn" data-step-rotor="2" data-dir="up" title="Step Up">▲</button>
-              <div class="rotor-window" id="rotor-val-2">A</div>
-              <button class="rotor-step-btn" data-step-rotor="2" data-dir="down" title="Step Down">▼</button>
-            </div>
+          <div class="circuit-math-readout" id="circuit-trace">
+            <span class="flow-step">Press any key or replay broadcast to trace internal wiring...</span>
           </div>
         </div>
       </div>
 
       <!-- Lampboard (Glühlampenfeld) -->
-      <div class="lampboard-section">
-        <div class="lampboard-title">Glühlampenfeld · Lampboard Indicator</div>
+      <div class="lampboard-section translucent-deck" id="lampboard-section">
+        <div class="glass-screw glass-screw-tl"></div>
+        <div class="glass-screw glass-screw-tr"></div>
+        <div class="glass-screw glass-screw-bl"></div>
+        <div class="glass-screw glass-screw-br"></div>
+        <div class="deck-header-row">
+          <span class="lampboard-title">💡 GLÜHLAMPENFELD // INCANDESCENT LAMPBOARD &amp; RETURN BUS</span>
+          <span class="deck-bus-tag amber-bus">◀ RETURN BUS FROM STECKERBRETT</span>
+        </div>
         <div class="lampboard-grid" id="lampboard">
           <!-- Row 1: Q W E R T Z U I O -->
           <div class="lamp-row">
@@ -174,8 +270,15 @@
       </div>
 
       <!-- Keyboard (Tastatur) -->
-      <div class="keyboard-section">
-        <div class="lampboard-title">Tastatur · Mechanical Keyboard (Type or Click)</div>
+      <div class="keyboard-section translucent-deck" id="keyboard-section">
+        <div class="glass-screw glass-screw-tl"></div>
+        <div class="glass-screw glass-screw-tr"></div>
+        <div class="glass-screw glass-screw-bl"></div>
+        <div class="glass-screw glass-screw-br"></div>
+        <div class="deck-header-row">
+          <span class="lampboard-title">⌨ TASTATUR // MECHANICAL LEAF-SWITCH KEYBOARD (TYPE OR CLICK)</span>
+          <span class="deck-bus-tag cyan-bus">FORWARD BUS TO STECKERBRETT ▶</span>
+        </div>
         <div class="keyboard-grid" id="keyboard">
           <!-- Row 1: Q W E R T Z U I O -->
           <div class="key-row">
@@ -214,44 +317,15 @@
         </div>
       </div>
 
-      <!-- Electrical Signal Flow Visualizer with Crystal Clear Glass Cover -->
-      <div class="circuit-bay-frame">
-        <div class="circuit-bay-header">
-          <div class="circuit-bay-title-group">
-            <span class="circuit-bay-title">⚡ ENIGMA INNERE VERKABELUNG // ROTORS & WIRING BAY</span>
-            <span class="circuit-bay-subtitle">REAL-TIME SIGNAL CONDUCTION · 100% UNBLURRED INSPECTION GLASS</span>
-          </div>
-          <span class="circuit-bay-status" id="circuit-bay-status">CIRCUIT ARMED</span>
-        </div>
-
-        <div class="circuit-glass-viewport">
-          <!-- Glass corner mounting screws -->
-          <div class="glass-screw glass-screw-tl"></div>
-          <div class="glass-screw glass-screw-tr"></div>
-          <div class="glass-screw glass-screw-bl"></div>
-          <div class="glass-screw glass-screw-br"></div>
-
-          <!-- Internal Machinery & Interactive Wiring SVG -->
-          <svg id="enigma-internals-svg" viewBox="0 0 840 260" preserveAspectRatio="xMidYMid meet" class="internals-svg"></svg>
-
-          <!-- Crystal Clear Glass Cover Overlay (No Blur, Ultra-Clear Anti-Reflective Lens) -->
-          <div class="clear-glass-cover" aria-hidden="true">
-            <div class="glass-specular-edge"></div>
-            <div class="glass-corner-glare"></div>
-          </div>
-        </div>
-
-        <!-- Real-time formula readout below the glass bay -->
-        <div class="circuit-math-readout" id="circuit-trace">
-          <span class="flow-step">Awaiting keypress...</span>
-        </div>
-      </div>
-
       <!-- Full Interactive Steckerbrett (26-Socket Plugboard) -->
-      <div class="plugboard-section translucent-panel">
+      <div class="plugboard-section translucent-deck" id="plugboard-section">
+        <div class="glass-screw glass-screw-tl"></div>
+        <div class="glass-screw glass-screw-tr"></div>
+        <div class="glass-screw glass-screw-bl"></div>
+        <div class="glass-screw glass-screw-br"></div>
         <div class="plugboard-header">
           <div class="plugboard-title-group">
-            <span class="plugboard-title">🔌 VOLLSTÄNDIGES STECKERBRETT // 26-LETTER PLUGBOARD</span>
+            <span class="plugboard-title">🔌 VOLLSTÄNDIGES STECKERBRETT // 26-LETTER FRONT PLUGBOARD</span>
             <span class="plugboard-subtitle">CLICK ANY 2 SOCKETS TO PATCH CABLE LEADS · ACTIVE: <span id="plug-pairs-text" style="color: var(--neon-cyan); font-weight: bold;">DE · VF · ST</span></span>
           </div>
           <div class="plugboard-controls">

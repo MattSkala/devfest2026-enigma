@@ -2,9 +2,9 @@
 
 A real-time WWII Enigma I cipher interception engine and interactive decoder built for the **DevFest Prague 2026 Vibe Lounge Challenge** (`devfest-vibe-lounge.web.app`).
 
-Built with **Google Antigravity** & **Gemini**.
+Built with **Google Antigravity** & **Gemini** · **[Live Demo ↗](https://mattskala.github.io/devfest2026-enigma/)**
 
-![Enigma Preview](https://devfest-vibe-lounge.web.app/favicon.ico)
+![Enigma I X-Ray Internal Wiring & Live Decoder](./preview.png)
 
 ---
 

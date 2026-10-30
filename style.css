@@ -183,27 +183,60 @@ body {
   }
 }
 
-/* Translucent X-Ray Cyberpunk Chassis */
+/* Translucent X-Ray Cyberpunk & Skeuomorphic Chassis */
 .machine-chassis {
-  background: rgba(14, 18, 26, 0.82);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 2px solid rgba(0, 217, 255, 0.25);
+  background: rgba(11, 15, 22, 0.88);
+  border: 3px solid #3c2b1c;
+  outline: 1px solid rgba(0, 217, 255, 0.32);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 24px 28px;
   box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.8),
-    inset 0 1px 1px rgba(255, 255, 255, 0.3),
-    inset 0 0 30px rgba(0, 217, 255, 0.05);
+    0 28px 60px rgba(0, 0, 0, 0.85),
+    inset 0 0 0 2px #263142,
+    inset 0 1px 2px rgba(255, 255, 255, 0.25),
+    inset 0 0 40px rgba(0, 217, 255, 0.05);
   position: relative;
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
+  overflow: hidden;
   background-image: 
-    radial-gradient(circle at 50% 15%, rgba(0, 217, 255, 0.06) 0%, transparent 60%),
-    linear-gradient(rgba(0, 217, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 217, 255, 0.035) 1px, transparent 1px);
-  background-size: 100% 100%, 20px 20px, 20px 20px;
+    radial-gradient(circle at 50% 20%, rgba(0, 217, 255, 0.05) 0%, transparent 65%),
+    radial-gradient(circle at 50% 75%, rgba(212, 163, 89, 0.04) 0%, transparent 60%),
+    linear-gradient(rgba(0, 217, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 217, 255, 0.028) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 20px 20px, 20px 20px;
+}
+
+/* Full-Chassis Internal Wiring Harness SVGs */
+.machine-loom-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.machine-signal-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 6;
+}
+
+@keyframes signalPulseFlow {
+  0% { stroke-dashoffset: 28; }
+  100% { stroke-dashoffset: 0; }
+}
+
+.signal-pulse-path {
+  stroke-dasharray: 6 8;
+  animation: signalPulseFlow 0.55s linear infinite;
 }
 
 /* Industrial Hex Bolts */
@@ -215,7 +248,7 @@ body {
   background: radial-gradient(circle at 35% 30%, #7d8a9e 0%, #2f3744 60%, #151a22 100%);
   border: 1px solid #4a576c;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.4);
-  z-index: 5;
+  z-index: 15;
 }
 
 .chassis-bolt::after {
@@ -238,7 +271,8 @@ body {
 /* Mechanical Teleprinter Tape Deck */
 .teleprinter-section {
   position: relative;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+  z-index: 4;
 }
 
 .teleprinter-feed-slot {
@@ -358,9 +392,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
   border-bottom: 1px solid var(--chassis-border);
-  padding-bottom: 14px;
-  margin-bottom: 20px;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 4;
 }
 
 .chassis-plate-title {
@@ -375,117 +413,285 @@ body {
 }
 
 .chassis-plate-serial {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-dim);
   font-family: var(--font-serif);
 }
 
-/* Rotors Deck */
-.rotors-section {
-  background: #0f1319;
-  border: 1px solid #232c3a;
-  border-radius: var(--radius);
-  padding: 20px;
-  margin-bottom: 24px;
+/* Translucent Smoked Glass Machine Decks (Reveals Internal Copper Wiring Loom) */
+.translucent-deck {
+  background: rgba(9, 13, 20, 0.56);
+  border: 1.5px solid rgba(74, 98, 132, 0.42);
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  position: relative;
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 4px 18px rgba(0, 0, 0, 0.75),
+    0 8px 20px rgba(0, 0, 0, 0.55);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
+/* 4 glass corner mounting screws on each translucent deck */
+.glass-screw {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f2e0c4 0%, #b88a44 55%, #3d2b12 100%);
+  border: 1px solid #d4a359;
+  z-index: 9;
+  pointer-events: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+.glass-screw::after {
+  content: "";
+  position: absolute;
+  top: 3.5px;
+  left: 1px;
+  right: 1px;
+  height: 1px;
+  background: #241808;
+  transform: rotate(-30deg);
+}
+.glass-screw-tl { top: 7px; left: 7px; }
+.glass-screw-tr { top: 7px; right: 7px; }
+.glass-screw-bl { bottom: 7px; left: 7px; }
+.glass-screw-br { bottom: 7px; right: 7px; }
+
+/* Walzenlage: Integrated Rotor Spindle & Cutaway Commutator Assembly */
 .rotors-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(74, 98, 132, 0.3);
+  position: relative;
+  z-index: 9;
+}
+
+.rotors-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .rotors-header h3 {
-  font-size: 0.85rem;
-  color: var(--text-muted);
+  font-size: 0.82rem;
+  color: var(--brass);
   text-transform: uppercase;
   letter-spacing: 1.5px;
+  font-weight: 700;
 }
 
-.rotors-grid {
+.rotors-subtitle {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.8px;
+}
+
+.circuit-bay-status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  background: rgba(0, 255, 157, 0.12);
+  border: 1px solid rgba(0, 255, 157, 0.35);
+  color: var(--neon-green);
+}
+
+.spindle-assembly {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+  grid-template-columns: 0.82fr 1.48fr 1.48fr 1.48fr 0.78fr;
+  gap: 10px;
+  align-items: stretch;
+  position: relative;
+  padding: 4px 0;
+  min-width: 0;
 }
 
+/* Central Brushed Steel Rotor Axle Shaft */
+.spindle-axle {
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  top: 68%;
+  height: 22px;
+  transform: translateY(-50%);
+  background: linear-gradient(180deg, #27313f 0%, #6f8099 28%, #cdd8e8 48%, #475569 72%, #131820 100%);
+  border-top: 1px solid #94a3b8;
+  border-bottom: 1px solid #090d12;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.85);
+  z-index: 0;
+  border-radius: 3px;
+}
+
+.spindle-stator,
 .rotor-unit {
-  background: linear-gradient(180deg, #1b212c 0%, #10141a 100%);
-  border: 1px solid #334155;
-  border-radius: var(--radius);
-  padding: 18px 12px;
+  background: linear-gradient(180deg, rgba(24, 31, 44, 0.92) 0%, rgba(12, 16, 24, 0.94) 100%);
+  border: 1px solid #384963;
+  border-radius: 6px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   position: relative;
-  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.08), 0 8px 16px rgba(0, 0, 0, 0.6);
+  box-shadow: 
+    inset 0 1px 2px rgba(255, 255, 255, 0.12),
+    0 8px 18px rgba(0, 0, 0, 0.75);
+  min-width: 0;
+}
+
+.rotor-top-deck {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 76px;
+  position: relative;
+  z-index: 10;
+}
+
+.rotor-unit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .rotor-label {
-  font-size: 0.72rem;
-  color: var(--text-dim);
+  font-size: 0.66rem;
+  color: #d6e1f0;
+  font-weight: 700;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.stator-sub {
+  font-size: 0.58rem;
+  color: var(--brass);
+  text-transform: uppercase;
+}
+
+.stator-badge-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #121721 0%, #0a0d13 100%);
+  border: 1px solid #2e3b50;
+  border-radius: 5px;
+  padding: 4px;
+}
+
+.stator-code {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--brass);
   letter-spacing: 1px;
 }
 
-.rotor-notch-indicator {
-  font-size: 0.68rem;
+.stator-desc {
+  font-size: 0.54rem;
   color: var(--text-dim);
-  margin-bottom: 10px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid #232c3a;
-  display: flex;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.rotor-notch-indicator {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.65);
+  border: 1px solid #2b374a;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  white-space: nowrap;
 }
 
 .rotor-notch-indicator::before {
   content: "";
   display: inline-block;
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: #3a4454;
+  background: #475569;
 }
 
 .rotor-notch-indicator.on-notch {
-  background: rgba(255, 51, 68, 0.2);
-  color: #ff5566;
+  background: rgba(255, 51, 68, 0.22);
+  color: #ff6677;
   border-color: #ff3344;
   font-weight: bold;
-  box-shadow: 0 0 12px rgba(255, 51, 68, 0.5);
+  box-shadow: 0 0 10px rgba(255, 51, 68, 0.5);
 }
 
 .rotor-notch-indicator.on-notch::before {
   background: #ff3344;
-  box-shadow: 0 0 8px #ff3344;
+  box-shadow: 0 0 6px #ff3344;
 }
 
 .rotor-wheel {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 6px;
   position: relative;
+  padding: 5px 8px;
+  background: linear-gradient(180deg, #10151e 0%, #1c2432 50%, #0f131b 100%);
+  border: 1px solid #35455d;
+  border-radius: 5px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+/* Skeuomorphic Knurled Brass Thumbwheel Rim */
+.knurled-gear {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: -3px;
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    #e5b96f 0px,
+    #e5b96f 2px,
+    #593b12 2px,
+    #593b12 4px
+  );
+  border-radius: 2px;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
 }
 
 .rotor-step-btn {
   background: linear-gradient(180deg, #2b3547 0%, #181f2b 100%);
-  border: 1px solid #455773;
+  border: 1px solid #4d6180;
   color: #d8e2f0;
-  width: 44px;
-  height: 28px;
+  width: 30px;
+  height: 36px;
   border-radius: 4px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
-  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  font-size: 0.75rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.2);
   transition: all 0.1s;
+  position: relative;
 }
 
 .rotor-step-btn:hover {
@@ -495,27 +701,26 @@ body {
 }
 
 .rotor-step-btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.8), inset 0 2px 4px rgba(0, 0, 0, 0.7);
+  transform: translateY(1px);
 }
 
 .rotor-window {
-  width: 66px;
-  height: 66px;
-  background: radial-gradient(circle at 50% 40%, #15181f 0%, #050608 90%);
-  border: 3px solid var(--brass);
-  border-radius: 10px;
+  width: 48px;
+  height: 42px;
+  background: radial-gradient(circle at 50% 40%, #171c26 0%, #050608 90%);
+  border: 2.5px solid var(--brass);
+  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.3rem;
+  font-size: 1.65rem;
   font-weight: 800;
   color: var(--brass);
-  text-shadow: 0 0 14px var(--brass-glow);
+  text-shadow: 0 0 12px var(--brass-glow);
   box-shadow: 
-    inset 0 6px 12px rgba(0, 0, 0, 0.95), 
-    0 0 12px rgba(212, 163, 89, 0.3),
-    0 4px 8px rgba(0, 0, 0, 0.7);
+    inset 0 5px 10px rgba(0, 0, 0, 0.95), 
+    0 0 10px rgba(212, 163, 89, 0.25),
+    0 3px 6px rgba(0, 0, 0, 0.7);
   user-select: none;
   position: relative;
   overflow: hidden;
@@ -525,86 +730,214 @@ body {
 .rotor-window::after {
   content: "";
   position: absolute;
-  top: 0;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, transparent 50%, rgba(255, 255, 255, 0.04) 100%);
+  pointer-events: none;
+  border-radius: 5px;
+}
+
+/* Exposed Cutaway Rotor Commutator Drum */
+.cutaway-drum {
+  height: 158px;
+  background: radial-gradient(circle at 50% 50%, rgba(12, 18, 28, 0.94) 0%, rgba(4, 7, 12, 0.98) 100%);
+  border: 1.5px solid #475b78;
+  border-left: 2.5px solid #b88a44;
+  border-right: 2.5px solid #b88a44;
+  border-radius: 5px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    inset 0 0 16px rgba(0, 0, 0, 0.95),
+    0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.ukw-drum {
+  border-left: 3px solid #64748b;
+  border-right: 2.5px solid #d4a359;
+}
+
+.etw-drum {
+  border-left: 2.5px solid #d4a359;
+  border-right: 3px solid #00d9ff;
+}
+
+.drum-glass-glare {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(125deg, rgba(255, 255, 255, 0.07) 0%, transparent 40%, rgba(0, 217, 255, 0.03) 100%);
+  pointer-events: none;
+}
+
+.drum-tag {
+  position: absolute;
+  bottom: 3px;
   left: 0;
   right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, transparent 50%, rgba(255, 255, 255, 0.05) 100%);
+  text-align: center;
+  font-size: 0.52rem;
+  color: rgba(180, 198, 224, 0.45);
+  letter-spacing: 0.7px;
   pointer-events: none;
-  border-radius: 7px;
+  text-transform: uppercase;
 }
 
-.rotor-window.stepping {
-  transform: translateY(-2px) scale(1.04);
-}
-
-.rotor-actions {
-  display: flex;
-  gap: 8px;
+/* Integrated Spindle Signal Trace Bar */
+.spindle-trace-bar {
   margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(74, 98, 132, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  z-index: 9;
 }
 
-/* Lampboard */
-.lampboard-section {
-  background: #0d1015;
-  border: 1px solid #202735;
-  border-radius: var(--radius);
-  padding: 24px 16px;
-  margin-bottom: 24px;
-  box-shadow: inset 0 4px 12px rgba(0,0,0,0.8);
+.trace-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-dot.cyan {
+  background: #00e5ff;
+  box-shadow: 0 0 8px #00e5ff;
+}
+
+.legend-dot.amber {
+  background: #ffaa22;
+  box-shadow: 0 0 8px #ffaa22;
+}
+
+/* Deck Header Rows for Lampboard & Keyboard */
+.deck-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(74, 98, 132, 0.25);
+  position: relative;
+  z-index: 9;
 }
 
 .lampboard-title {
-  text-align: center;
-  font-size: 0.72rem;
-  color: var(--text-dim);
+  font-size: 0.76rem;
+  color: var(--brass);
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 16px;
+  letter-spacing: 1.5px;
 }
 
+.deck-bus-tag {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.deck-bus-tag.amber-bus {
+  color: var(--amber);
+  background: rgba(255, 170, 34, 0.12);
+  border: 1px solid rgba(255, 170, 34, 0.35);
+}
+
+.deck-bus-tag.cyan-bus {
+  color: var(--neon-cyan);
+  background: rgba(0, 217, 255, 0.12);
+  border: 1px solid rgba(0, 217, 255, 0.35);
+}
+
+/* Lampboard (Glühlampenfeld) */
 .lampboard-grid {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  position: relative;
 }
 
 .lamp-row {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .lamp {
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  background: radial-gradient(circle at 45% 40%, #2f343d 0%, #15181d 75%, #0b0d10 100%);
-  border: 2px solid #4a5464;
+  background: radial-gradient(circle at 45% 40%, #2a303a 0%, #12161c 72%, #080a0d 100%);
+  border: 2.5px solid #6b5636;
+  outline: 1px solid #2b3545;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
+  font-size: 1.12rem;
   font-weight: 700;
-  color: #556070;
+  color: #6c7a8e;
   user-select: none;
   position: relative;
+  z-index: 10;
   box-shadow: 
-    0 4px 8px rgba(0, 0, 0, 0.7),
-    inset 0 2px 3px rgba(255, 255, 255, 0.15),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.8);
+    0 5px 10px rgba(0, 0, 0, 0.8),
+    inset 0 2px 4px rgba(255, 255, 255, 0.15),
+    inset 0 -2px 5px rgba(0, 0, 0, 0.9);
   transition: all 0.08s ease;
 }
 
+/* Inner Tungsten Filament Coil */
 .lamp::before {
   content: "";
   position: absolute;
-  width: 12px;
-  height: 6px;
-  border: 1px dashed rgba(255, 255, 255, 0.15);
+  width: 14px;
+  height: 7px;
+  border: 1px dashed rgba(212, 163, 89, 0.28);
   border-bottom: none;
-  border-radius: 6px 6px 0 0;
+  border-radius: 7px 7px 0 0;
+  top: 7px;
   pointer-events: none;
+}
+
+/* Skeuomorphic Brass Solder Terminal Lug under each Lamp */
+.lamp::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  width: 8px;
+  height: 5px;
+  border-radius: 1px 1px 3px 3px;
+  background: linear-gradient(90deg, #8c6227, #ffd27d, #8c6227);
+  border: 1px solid #4a3210;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+}
+
+/* Traced Lamp (Active Circuit Target at Rest) */
+.lamp.traced {
+  border-color: #ffaa22;
+  color: #ffd480;
+  box-shadow: 
+    0 0 18px rgba(255, 170, 34, 0.75),
+    inset 0 0 12px rgba(255, 170, 34, 0.45);
 }
 
 .lamp.lit {
@@ -613,10 +946,11 @@ body {
   color: #1a0f00;
   text-shadow: 0 0 4px rgba(255, 255, 255, 0.9);
   box-shadow: 
-    0 0 30px #ffaa22,
-    0 0 60px rgba(255, 170, 34, 0.7),
+    0 0 32px #ffaa22,
+    0 0 64px rgba(255, 170, 34, 0.8),
     inset 0 0 16px #ffffff;
   transform: scale(1.08);
+  z-index: 11;
 }
 
 .lamp.lit::before {
@@ -624,35 +958,29 @@ body {
   box-shadow: 0 0 8px #ffffff;
 }
 
-/* Keyboard */
-.keyboard-section {
-  background: #11151c;
-  border: 1px solid #252f3f;
-  border-radius: var(--radius);
-  padding: 24px 16px;
-  margin-bottom: 24px;
-}
-
+/* Keyboard (Tastatur) */
 .keyboard-grid {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  position: relative;
 }
 
 .key-row {
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .key-btn {
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  background: radial-gradient(circle at 45% 40%, #2f3847 0%, #181d26 80%, #0e1218 100%);
-  border: 2px solid #5a6b85;
-  color: #f0f4fa;
-  font-size: 1.15rem;
+  background: radial-gradient(circle at 42% 35%, #323c4d 0%, #161b24 78%, #0b0e13 100%);
+  border: 3px solid #9aa8bc;
+  outline: 1.5px solid #283344;
+  color: #f4f7fc;
+  font-size: 1.12rem;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -660,12 +988,27 @@ body {
   cursor: pointer;
   user-select: none;
   font-family: inherit;
-  box-shadow: 
-    0 5px 8px rgba(0, 0, 0, 0.7),
-    inset 0 1px 2px rgba(255, 255, 255, 0.3),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.8);
-  transition: all 0.06s ease;
   position: relative;
+  z-index: 10;
+  box-shadow: 
+    0 6px 10px rgba(0, 0, 0, 0.85),
+    inset 0 2px 3px rgba(255, 255, 255, 0.35),
+    inset 0 -3px 5px rgba(0, 0, 0, 0.85);
+  transition: all 0.06s ease;
+}
+
+/* Mechanical Leaf-Switch Brass Contact Terminal under each Key */
+.key-btn::after {
+  content: "";
+  position: absolute;
+  bottom: -7px;
+  width: 10px;
+  height: 5px;
+  border-radius: 1px 1px 3px 3px;
+  background: linear-gradient(90deg, #007799, #00e5ff, #007799);
+  border: 1px solid #004455;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
 }
 
 .key-btn:hover {
@@ -673,180 +1016,73 @@ body {
   color: var(--brass);
 }
 
-.key-btn:active, .key-btn.pressed {
-  transform: translateY(4px) scale(0.96);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), inset 0 3px 6px rgba(0, 0, 0, 0.9);
-  border-color: var(--amber);
-  color: var(--amber);
-}
-
-/* Electrical Signal Flow Visualizer with Blurry Glass Cover */
-.circuit-bay-frame {
-  background: linear-gradient(180deg, #11161f 0%, #0a0d13 100%);
-  border: 2px solid #283344;
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  margin-bottom: 24px;
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8), 0 8px 16px rgba(0, 0, 0, 0.5);
-  position: relative;
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-.circuit-bay-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.circuit-bay-title-group {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.circuit-bay-title {
-  color: var(--brass);
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-}
-
-.circuit-bay-subtitle {
-  font-size: 0.65rem;
-  color: var(--text-dim);
-  letter-spacing: 1px;
-}
-
-.circuit-glass-viewport {
-  position: relative;
-  border-radius: 6px;
-  overflow: hidden;
-  border: 1px solid #3d4c63;
-  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.95), 0 4px 12px rgba(0, 0, 0, 0.6);
-  min-height: 250px;
-  background: #05070a;
-}
-
-/* 4 glass corner bolts */
-.glass-screw {
-  position: absolute;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #e2ecfa 0%, #76869e 60%, #1f2735 100%);
-  border: 1px solid #899ab3;
-  z-index: 10;
-  pointer-events: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
-}
-.glass-screw-tl { top: 8px; left: 8px; }
-.glass-screw-tr { top: 8px; right: 8px; }
-.glass-screw-bl { bottom: 8px; left: 8px; }
-.glass-screw-br { bottom: 8px; right: 8px; }
-
-/* Internal Machinery SVG Wiring Diagram */
-.internals-svg {
-  width: 100%;
-  height: auto;
-  min-height: 250px;
-  display: block;
-  background: radial-gradient(circle at 50% 50%, #0a0e16 0%, #040609 100%);
-  position: relative;
-  z-index: 1;
-}
-
-/* Crystal Clear Glass Cover (NO BLUR - 100% VISIBLE) */
-.clear-glass-cover {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 5;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(0, 0, 0, 0.02) 50%, rgba(0, 217, 255, 0.015) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+/* Traced Key (Active Circuit Source at Rest) */
+.key-btn.traced {
+  border-color: #00e5ff;
+  color: #00e5ff;
   box-shadow: 
-    inset 0 1px 1px rgba(255, 255, 255, 0.25), 
-    inset 0 -1px 1px rgba(0, 0, 0, 0.6),
-    inset 0 0 15px rgba(0, 0, 0, 0.4);
+    0 0 18px rgba(0, 229, 255, 0.75),
+    inset 0 0 12px rgba(0, 229, 255, 0.35);
 }
 
-.glass-specular-edge {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent 5%, rgba(255, 255, 255, 0.4) 30%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.4) 70%, transparent 95%);
+.key-btn:active, .key-btn.pressed {
+  transform: translateY(4px) scale(0.95);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.9), inset 0 3px 6px rgba(0, 0, 0, 0.9);
+  border-color: #00e5ff;
+  color: #ffffff;
 }
 
-.glass-corner-glare {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 120px;
-  height: 80px;
-  background: radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
-}
-
-/* Real-time formula readout below the glass bay */
+/* Real-time formula readout inside the Walzenlage spindle bar */
 .circuit-math-readout {
-  margin-top: 10px;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   font-family: var(--font-mono);
   min-width: 0;
   max-width: 100%;
 }
 
 .flow-step {
-  background: rgba(18, 24, 34, 0.9);
+  background: rgba(14, 19, 28, 0.92);
   border: 1px solid #36465d;
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: 4px;
   color: #c9d6e8;
-  font-size: 0.76rem;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  font-size: 0.72rem;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
   transition: all 0.2s ease;
 }
 
 .flow-step.active {
   border-color: var(--neon-cyan);
   color: var(--neon-cyan);
-  background: rgba(0, 217, 255, 0.18);
-  box-shadow: 0 0 14px rgba(0, 217, 255, 0.5), inset 0 0 8px rgba(0, 217, 255, 0.2);
-  text-shadow: 0 0 6px rgba(0, 217, 255, 0.8);
+  background: rgba(0, 217, 255, 0.16);
+  box-shadow: 0 0 10px rgba(0, 217, 255, 0.35);
+}
+
+.flow-step.reverse-step {
+  border-color: rgba(255, 170, 34, 0.6);
+  color: #ffd27d;
+  background: rgba(255, 170, 34, 0.12);
 }
 
 .flow-step.lamp-step {
   border-color: var(--amber);
   color: #fff;
-  background: rgba(255, 170, 34, 0.25);
-  box-shadow: 0 0 16px var(--amber), inset 0 0 8px rgba(255, 170, 34, 0.4);
+  background: rgba(255, 170, 34, 0.28);
+  box-shadow: 0 0 14px var(--amber), inset 0 0 8px rgba(255, 170, 34, 0.4);
   text-shadow: 0 0 8px var(--amber);
 }
 
 .flow-arrow {
   color: var(--text-dim);
+  font-size: 0.7rem;
 }
 
 /* Full Interactive Steckerbrett */
 .plugboard-section {
-  margin-top: 24px;
-  background: rgba(11, 15, 22, 0.75);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(70, 95, 130, 0.35);
-  border-radius: var(--radius);
-  padding: 18px 20px;
-  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.8), 0 4px 16px rgba(0, 0, 0, 0.5);
+  margin-bottom: 0;
 }
 
 .plugboard-header {
@@ -858,6 +1094,8 @@ body {
   margin-bottom: 16px;
   border-bottom: 1px solid rgba(70, 95, 130, 0.3);
   padding-bottom: 10px;
+  position: relative;
+  z-index: 9;
 }
 
 .plugboard-title-group {
@@ -905,7 +1143,6 @@ body {
   grid-template-columns: repeat(13, 1fr);
   gap: 10px 8px;
   position: relative;
-  z-index: 2;
 }
 
 @media (max-width: 900px) {
@@ -932,6 +1169,7 @@ body {
   user-select: none;
   transition: all 0.15s ease;
   position: relative;
+  z-index: 10;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.15);
 }
 
@@ -997,7 +1235,7 @@ body {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 3;
+  z-index: 12;
 }
 
 .plug-pairs-list {
@@ -1005,6 +1243,8 @@ body {
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 14px;
+  position: relative;
+  z-index: 9;
 }
 
 .plug-badge {
