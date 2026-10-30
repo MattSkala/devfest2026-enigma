@@ -138,6 +138,27 @@ class SoundController {
     });
   }
 
+  playTypewriterStrike() {
+    this.playKeyClack();
+  }
+
+  playBell() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(2400, t);
+    gain.gain.setValueAtTime(0.15, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.5);
+  }
+
   playBeep(freq = 800, dur = 0.05, vol = 0.1) {
     if (!this.enabled) return;
     this.init();

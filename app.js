@@ -11,6 +11,8 @@ const state = {
   agendaItems: [],
   activeTab: "tab-intercepts",
   isSimulating: false,
+  hasInitialReplayed: false,
+  currentReplayTx: null,
   nextFetchCountdown: 15,
   currentLitLamp: null,
   litTimer: null
@@ -29,6 +31,7 @@ const elements = {
     document.getElementById("notch-2")
   ],
   circuitTrace: document.getElementById("circuit-trace"),
+  circuitBayStatus: document.getElementById("circuit-bay-status"),
   lampboard: document.getElementById("lampboard"),
   keyboard: document.getElementById("keyboard"),
   txList: document.getElementById("tx-list"),
@@ -41,6 +44,14 @@ const elements = {
   soundIcon: document.getElementById("sound-icon"),
   soundLabel: document.getElementById("sound-label"),
   syncNowBtn: document.getElementById("btn-quick-refresh"),
+  // Teleprinter Paper Elements
+  paperText: document.getElementById("paper-text"),
+  paperCursor: document.getElementById("paper-cursor"),
+  paperTxNum: document.getElementById("paper-tx-num"),
+  paperTxStart: document.getElementById("paper-tx-start"),
+  paperTxTime: document.getElementById("paper-tx-time"),
+  btnReplayPaper: document.getElementById("btn-replay-paper"),
+  btnClearPaper: document.getElementById("btn-clear-paper"),
   // Vibe Lab
   labInput: document.getElementById("lab-input"),
   labOutput: document.getElementById("lab-output"),
@@ -94,7 +105,7 @@ function lightLamp(char) {
     state.litTimer = setTimeout(() => {
       lamp.classList.remove("lit");
       state.currentLitLamp = null;
-    }, 400);
+    }, 380);
   }
 }
 
@@ -107,16 +118,19 @@ function renderCircuitTrace(trace) {
   const html = `
     <span class="flow-step active">KEY [${trace.input}]</span>
     <span class="flow-arrow">➔</span>
-    ${trace.steps.map(s => `
-      <span class="flow-step">${s.stage.replace("Rotor ", "R-")}: <strong>${s.val}</strong></span>
-      <span class="flow-arrow">➔</span>
-    `).join("")}
-    <span class="flow-step active" style="border-color: var(--neon-green); color: var(--neon-green);">LAMP [${trace.steps[trace.steps.length - 1].val}]</span>
+    ${trace.steps.map((s, idx) => {
+      const isLamp = idx === trace.steps.length - 1;
+      const stepClass = isLamp ? "flow-step lamp-step" : "flow-step";
+      return `
+        <span class="${stepClass}">${s.stage.replace("Rotor ", "R-")}: <strong>${s.val}</strong></span>
+        ${isLamp ? "" : '<span class="flow-arrow">➔</span>'}
+      `;
+    }).join("")}
   `;
   elements.circuitTrace.innerHTML = html;
 }
 
-function triggerKey(char) {
+function triggerKey(char, appendToPaper = true) {
   const upper = char.toUpperCase();
   if (upper < "A" || upper > "Z") return;
 
@@ -124,7 +138,7 @@ function triggerKey(char) {
   const keyBtn = elements.keyboard.querySelector(`[data-key="${upper}"]`);
   if (keyBtn) {
     keyBtn.classList.add("pressed");
-    setTimeout(() => keyBtn.classList.remove("pressed"), 180);
+    setTimeout(() => keyBtn.classList.remove("pressed"), 160);
   }
 
   // Audio FX
@@ -135,6 +149,14 @@ function triggerKey(char) {
   updateRotorUI();
   lightLamp(res.char);
   renderCircuitTrace(res.trace);
+
+  // Append to paper tape if manual typing
+  if (appendToPaper && !state.isSimulating) {
+    if (elements.paperText.textContent.startsWith("INITIALIZING")) {
+      elements.paperText.textContent = "";
+    }
+    elements.paperText.textContent += res.char;
+  }
 
   return res.char;
 }
@@ -181,8 +203,90 @@ window.addEventListener("keydown", (e) => {
   if (key >= "A" && key <= "Z" && key.length === 1) {
     e.preventDefault();
     triggerKey(key);
+  } else if (e.key === " " && !state.isSimulating) {
+    e.preventDefault();
+    elements.paperText.textContent += " ";
+    sounds.playKeyClack();
   }
 });
+
+// -------------------------------------------------------------
+// Teleprinter Paper Tape Controls
+// -------------------------------------------------------------
+
+if (elements.btnClearPaper) {
+  elements.btnClearPaper.addEventListener("click", () => {
+    elements.paperText.textContent = "";
+  });
+}
+
+if (elements.btnReplayPaper) {
+  elements.btnReplayPaper.addEventListener("click", () => {
+    const tx = state.currentReplayTx || state.transmissions[0];
+    if (tx) {
+      replayTransmission(tx);
+    }
+  });
+}
+
+// -------------------------------------------------------------
+// Replay Transmission on Enigma & Type on Paper
+// -------------------------------------------------------------
+
+async function replayTransmission(tx) {
+  if (state.isSimulating || !tx) return;
+  state.isSimulating = true;
+  state.currentReplayTx = tx;
+
+  // Update paper metadata header
+  const sentTime = new Date(tx.sentAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (elements.paperTxNum) elements.paperTxNum.textContent = `TX: #${tx.number}`;
+  if (elements.paperTxStart) elements.paperTxStart.textContent = `START: ${tx.start}`;
+  if (elements.paperTxTime) elements.paperTxTime.textContent = `TIME: ${sentTime}`;
+  if (elements.paperText) elements.paperText.textContent = "";
+  if (elements.circuitBayStatus) elements.circuitBayStatus.textContent = "DECODING LIVE SIGNAL…";
+
+  // Set rotor start positions
+  state.machine.setPositions(tx.start);
+  sounds.playRotorStep();
+  updateRotorUI();
+
+  // Highlight corresponding card in list if exists
+  elements.txList.querySelectorAll(".tx-card").forEach(c => {
+    if (c.dataset.txNum === String(tx.number)) {
+      c.classList.add("selected");
+    } else {
+      c.classList.remove("selected");
+    }
+  });
+
+  const chars = tx.ciphertext.split("");
+  for (let i = 0; i < chars.length; i++) {
+    const ch = chars[i];
+    if (ch.toUpperCase() >= "A" && ch.toUpperCase() <= "Z") {
+      const decoded = triggerKey(ch, false);
+      if (elements.paperText) {
+        elements.paperText.textContent += decoded;
+      }
+      await new Promise(r => setTimeout(r, 85));
+    } else {
+      // Spaces, punctuation, digits pass straight through
+      if (elements.paperText) {
+        elements.paperText.textContent += ch;
+      }
+      sounds.playKeyClack();
+      await new Promise(r => setTimeout(r, 45));
+    }
+  }
+
+  // Typewriter bell on transmission completion
+  sounds.playBell();
+  if (elements.circuitBayStatus) {
+    elements.circuitBayStatus.textContent = "SIGNAL DECODED ✓";
+  }
+
+  state.isSimulating = false;
+}
 
 // -------------------------------------------------------------
 // Live Transmissions Interception Engine
@@ -219,6 +323,14 @@ async function fetchTransmissions() {
 
     elements.apiStatusText.textContent = `ONLINE · ${state.transmissions.length} TRANSMISSIONS`;
     elements.statusPulse.style.background = "var(--neon-green)";
+
+    // Auto-replay latest transmission on first load for maximum wow factor!
+    if (!state.hasInitialReplayed && state.transmissions.length > 0) {
+      state.hasInitialReplayed = true;
+      setTimeout(() => {
+        replayTransmission(state.transmissions[0]);
+      }, 700);
+    }
   } catch (err) {
     console.warn("Failed to fetch transmissions:", err);
     elements.apiStatusText.textContent = "SIGNAL INTERRUPTED · RETRYING";
@@ -250,7 +362,7 @@ function renderTransmissions() {
         <div class="tx-actions">
           <button class="btn-mini btn-tx-copy" data-text="${encodeURIComponent(decoded)}">Copy Plaintext</button>
           <button class="btn-mini btn-tx-load" data-start="${tx.start}">Set Machine</button>
-          <button class="btn-mini btn-tx-simulate" data-start="${tx.start}" data-text="${encodeURIComponent(tx.ciphertext)}">▶ Run Live</button>
+          <button class="btn-mini btn-tx-simulate" data-num="${tx.number}">▶ Run Live</button>
         </div>
       </div>
     `;
@@ -282,20 +394,21 @@ function renderTransmissions() {
   elements.txList.querySelectorAll(".btn-tx-simulate").forEach(btn => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      const start = btn.dataset.start;
-      const cipher = decodeURIComponent(btn.dataset.text);
-      simulateDecryption(start, cipher);
+      const num = parseInt(btn.dataset.num, 10);
+      const targetTx = state.transmissions.find(t => t.number === num);
+      if (targetTx) {
+        replayTransmission(targetTx);
+      }
     });
   });
 
   elements.txList.querySelectorAll(".tx-card").forEach(card => {
     card.addEventListener("click", () => {
-      elements.txList.querySelectorAll(".tx-card").forEach(c => c.classList.remove("selected"));
-      card.classList.add("selected");
-      const start = card.dataset.start;
-      state.machine.setPositions(start);
-      sounds.playRotorStep();
-      updateRotorUI();
+      const num = parseInt(card.dataset.txNum, 10);
+      const targetTx = state.transmissions.find(t => t.number === num);
+      if (targetTx) {
+        replayTransmission(targetTx);
+      }
     });
   });
 }
@@ -305,12 +418,10 @@ function renderTransmissions() {
 // -------------------------------------------------------------
 
 function parseAndRenderAgenda() {
-  // Extract schedule items from decoded transmissions
   const itemsMap = new Map();
 
   for (const tx of state.transmissions) {
     const plain = decodeEnigma(tx.start, tx.ciphertext);
-    // Format: "17:25 MOONSHINE: PEOPLE AREN’T MACHINES: COLLABORATION HACKS... / IRENA ZATLOUKALOVA"
     const match = plain.match(/^(\d{1,2}:\d{2})\s+([^:]+):\s+(.+?)(?:\s*\/\s*(.+))?$/);
     if (match) {
       const time = match[1];
@@ -325,7 +436,6 @@ function parseAndRenderAgenda() {
     }
   }
 
-  // Sort chronologically
   state.agendaItems = Array.from(itemsMap.values()).sort((a, b) => a.time.localeCompare(b.time));
   renderAgendaList();
 }
@@ -369,33 +479,6 @@ if (elements.agendaFilter) {
 }
 
 // -------------------------------------------------------------
-// Live Letter-by-Letter Simulation
-// -------------------------------------------------------------
-
-async function simulateDecryption(start, text) {
-  if (state.isSimulating) return;
-  state.isSimulating = true;
-
-  // Set rotor start position
-  state.machine.setPositions(start);
-  updateRotorUI();
-
-  // Scroll to machine
-  window.scrollTo({ top: 0, behavior: "smooth" });
-
-  const lettersOnly = text.split("");
-  for (let i = 0; i < lettersOnly.length; i++) {
-    const ch = lettersOnly[i];
-    if (ch.toUpperCase() >= "A" && ch.toUpperCase() <= "Z") {
-      triggerKey(ch);
-      await new Promise(r => setTimeout(r, 90));
-    }
-  }
-
-  state.isSimulating = false;
-}
-
-// -------------------------------------------------------------
 // Vibe Lab (Manual Encoder / Decoder)
 // -------------------------------------------------------------
 
@@ -415,7 +498,13 @@ if (elements.labSimulateBtn) {
   elements.labSimulateBtn.addEventListener("click", () => {
     const start = elements.labStartPos.value.toUpperCase().replace(/[^A-Z]/g, "") || "AAA";
     const input = elements.labInput.value;
-    simulateDecryption(start, input);
+    const fakeTx = {
+      number: 9999,
+      start,
+      ciphertext: input,
+      sentAt: new Date().toISOString()
+    };
+    replayTransmission(fakeTx);
   });
 }
 

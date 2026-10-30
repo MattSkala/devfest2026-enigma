@@ -49,12 +49,41 @@
   <main class="container">
     <!-- Left: Authentic Enigma I Machine Simulation -->
     <section class="machine-chassis">
+      <!-- Industrial Chassis Hex Bolts -->
+      <div class="chassis-bolt chassis-bolt-tl"></div>
+      <div class="chassis-bolt chassis-bolt-tr"></div>
+      <div class="chassis-bolt chassis-bolt-bl"></div>
+      <div class="chassis-bolt chassis-bolt-br"></div>
+
       <div class="chassis-plate">
         <div class="chassis-plate-title">
           <span>⚡ CHIFFRIERMASCHINE ENIGMA I</span>
         </div>
         <div class="chassis-plate-serial">
           SERIEN-NR: DF-PRG-2026 / REFLECTOR B / RINGS AAA
+        </div>
+      </div>
+
+      <!-- Mechanical Teleprinter / Telegram Paper Slip Deck -->
+      <div class="teleprinter-section">
+        <div class="teleprinter-feed-slot"></div>
+        <div class="teleprinter-paper" id="teleprinter-paper">
+          <div class="paper-header">
+            <div class="paper-stamp">TOP SECRET // DEVFEST BLETCHLEY INTERCEPT</div>
+            <div class="paper-meta" id="paper-meta">
+              <span class="paper-meta-item" id="paper-tx-num">TX: #0000</span>
+              <span class="paper-meta-item" id="paper-tx-start">START: AAA</span>
+              <span class="paper-meta-item" id="paper-tx-time">TIME: --:--</span>
+            </div>
+            <div class="paper-actions">
+              <button class="btn-paper" id="btn-replay-paper" title="Replay decoding this transmission on the machine">↺ Replay Broadcast</button>
+              <button class="btn-paper" id="btn-clear-paper" title="Clear typed paper">📄 Clear Tape</button>
+            </div>
+          </div>
+          <div class="paper-body">
+            <span class="paper-text" id="paper-text">INITIALIZING RECEIVER... WAITING FOR TRANSMISSION.</span><span class="paper-cursor" id="paper-cursor">█</span>
+          </div>
+          <div class="paper-perforations"></div>
         </div>
       </div>
 
@@ -185,11 +214,32 @@
         </div>
       </div>
 
-      <!-- Electrical Signal Flow Visualizer -->
-      <div class="signal-flow-box">
-        <span class="signal-flow-title">CIRCUIT TRACE:</span>
-        <div class="signal-flow-steps" id="circuit-trace">
-          <span class="flow-step">Awaiting keypress...</span>
+      <!-- Electrical Signal Flow Visualizer behind Blurry Glass Cover -->
+      <div class="circuit-bay-frame">
+        <div class="circuit-bay-header">
+          <span class="circuit-bay-title">⚡ ELEKTRISCHER SCHALTPLAN // GLASS-SEALED CIPHER BAY</span>
+          <span class="circuit-bay-status" id="circuit-bay-status">CIRCUIT ARMED</span>
+        </div>
+        <div class="circuit-glass-viewport">
+          <!-- Glass corner mounting screws -->
+          <div class="glass-screw glass-screw-tl"></div>
+          <div class="glass-screw glass-screw-tr"></div>
+          <div class="glass-screw glass-screw-bl"></div>
+          <div class="glass-screw glass-screw-br"></div>
+
+          <!-- Glowing Cyberpunk Circuit Underneath -->
+          <div class="circuit-pcb-underlay">
+            <div class="circuit-grid-lines"></div>
+            <div class="circuit-steps-flow" id="circuit-trace">
+              <span class="flow-step">Awaiting keypress...</span>
+            </div>
+          </div>
+
+          <!-- Frosted Blurry Glass Cover Overlay -->
+          <div class="glass-cover-overlay" aria-hidden="true">
+            <div class="glass-reflection"></div>
+            <div class="glass-specular"></div>
+          </div>
         </div>
       </div>
 
